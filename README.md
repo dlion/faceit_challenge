@@ -42,3 +42,5 @@ A user must be stored using the following schema:
 ## Considerations
 
 * Since I decided to use MongoDB as a db, I'm using `ObjectIDs` as id. It because has been shown that using UUIDs cause performance drop for inserts.
+* Hashing the user's password with bcrypt.
+* Integration testing the repository logic, with testcontainers for simplicity.

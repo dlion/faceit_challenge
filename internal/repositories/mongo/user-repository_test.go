@@ -61,6 +61,8 @@ func TestRepository(t *testing.T) {
 			assert.Equal(t, "UK", userResult.Country)
 			assert.NotEmpty(t, userResult.Id)
 			assert.NotEmpty(t, userResult.Password)
+			assert.NotEmpty(t, userResult.CreatedAt)
+			assert.NotEmpty(t, userResult.UpdatedAt)
 			assert.NoError(t, bcrypt.CompareHashAndPassword([]byte(userResult.Password), []byte("testPassword")))
 		})
 

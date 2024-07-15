@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -38,6 +39,8 @@ func (u *UserRepository) AddUser(ctx context.Context, user *User) error {
 		return err
 	}
 
+	setCreationTime(user)
+
 	if _, err := u.collection.InsertOne(ctx, user); err != nil {
 		return err
 	}
@@ -66,4 +69,10 @@ func addHashedPassword(user *User) error {
 
 	user.Password = string(hashedPassword)
 	return nil
+}
+
+func setCreationTime(user *User) {
+	now := time.Now()
+	user.CreatedAt = now
+	user.UpdatedAt = now
 }
