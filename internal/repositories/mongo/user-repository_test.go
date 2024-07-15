@@ -5,7 +5,9 @@ import (
 	"log"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go/modules/mongodb"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -40,23 +42,32 @@ func TestRepository(t *testing.T) {
 			log.Fatalf("failed to ping MongoDB: %s", err)
 		}
 
-		//userRepo := NewUserRepository(mongoClient)
-		// userRepo.AddUser()
+		userRepo := NewUserRepository(mongoClient)
+		userRepo.AddUser(ctx, User{
+			FirstName: "testName",
+			LastName:  "testLastName",
+			Nickname:  "testNickname",
+			Email:     "testEmail@email.com",
+			Country:   "UK",
+		})
 
-		// result := mongoClient.
-		// 	Database("faceit").
-		// 	Collection("users").
-		// 	FindOne(ctx, bson.M{"nickname": "testNickname", "email": "testEmail@email.com"})
+		result := mongoClient.
+			Database("faceit").
+			Collection("users").
+			FindOne(ctx, bson.M{"nickname": "testNickname", "email": "testEmail@email.com"})
 
-		// assert.NoError(t, result.Err())
-		// userResult := &User{}
-		// assert.Contains(t, result.Decode(userResult), &User{
-		// 	FirstName: "testName",
-		// 	LastName:  "testLastName",
-		// 	Nickname:  "testNickname",
-		// 	Email:     "testEmail@email.com",
-		// 	Country:   "UK",
-		// })
+		assert.NoError(t, result.Err())
+		userResult := &User{}
+		err = result.Decode(userResult)
+		assert.NoError(t, err)
+		assert.NotNil(t, userResult)
+		assert.NotNil(t, userResult)
+		assert.Equal(t, "testName", userResult.FirstName)
+		assert.Equal(t, "testLastName", userResult.LastName)
+		assert.Equal(t, "testNickname", userResult.Nickname)
+		assert.Equal(t, "testEmail@email.com", userResult.Email)
+		assert.Equal(t, "UK", userResult.Country)
+		assert.NotEmpty(t, userResult.Id)
 	})
 
 	t.Run("Modify an existing user", func(t *testing.T) {

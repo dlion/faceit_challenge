@@ -37,3 +37,8 @@ A user must be stored using the following schema:
 * Modify an existing user
 * Remove a user
 * Return a paginated list of Users, allowing for filtering by certain criteria (All users with the country UK)
+
+
+## Considerations
+
+* Since I decided to use MongoDB as a db, I'm using `ObjectIDs` as id. It because has been shown that using UUIDs cause performance drop for inserts.
