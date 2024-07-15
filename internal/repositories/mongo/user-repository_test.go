@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func TestRepository(t *testing.T) {
@@ -43,12 +44,13 @@ func TestRepository(t *testing.T) {
 		}
 
 		userRepo := NewUserRepository(mongoClient)
-		userRepo.AddUser(ctx, User{
+		userRepo.AddUser(ctx, &User{
 			FirstName: "testName",
 			LastName:  "testLastName",
 			Nickname:  "testNickname",
 			Email:     "testEmail@email.com",
 			Country:   "UK",
+			Password:  "testPassword",
 		})
 
 		result := mongoClient.
@@ -61,13 +63,14 @@ func TestRepository(t *testing.T) {
 		err = result.Decode(userResult)
 		assert.NoError(t, err)
 		assert.NotNil(t, userResult)
-		assert.NotNil(t, userResult)
 		assert.Equal(t, "testName", userResult.FirstName)
 		assert.Equal(t, "testLastName", userResult.LastName)
 		assert.Equal(t, "testNickname", userResult.Nickname)
 		assert.Equal(t, "testEmail@email.com", userResult.Email)
 		assert.Equal(t, "UK", userResult.Country)
 		assert.NotEmpty(t, userResult.Id)
+		assert.NotEmpty(t, userResult.Password)
+		assert.NoError(t, bcrypt.CompareHashAndPassword([]byte(userResult.Password), []byte("testPassword")))
 	})
 
 	t.Run("Modify an existing user", func(t *testing.T) {
