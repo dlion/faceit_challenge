@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go/modules/mongodb"
@@ -45,8 +46,8 @@ func TestRepository(t *testing.T) {
 			})
 
 			result := mongoClient.
-				Database("faceit").
-				Collection("users").
+				Database(DATABASE_NAME).
+				Collection(COLLECTION_NAME).
 				FindOne(ctx, bson.M{"nickname": "testNickname", "email": "testEmail@email.com"})
 
 			assert.NoError(t, result.Err())
@@ -87,8 +88,8 @@ func TestRepository(t *testing.T) {
 			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
 
 			_, err = mongoClient.
-				Database("faceit").
-				Collection("users").
+				Database(DATABASE_NAME).
+				Collection(COLLECTION_NAME).
 				InsertOne(ctx, &User{
 					Id:        "randomID",
 					FirstName: "testName",
@@ -114,6 +115,70 @@ func TestRepository(t *testing.T) {
 	})
 
 	t.Run("Modify an existing user", func(t *testing.T) {
+
+		t.Run("Modify an existing user", func(t *testing.T) {
+			ctx := context.Background()
+
+			mongodbContainer, err := mongodb.Run(ctx, "mongo:7")
+			assert.NoError(t, err, "failed to terminate container: %s", err)
+
+			defer func() {
+				err := mongodbContainer.Terminate(ctx)
+				assert.NoError(t, err, "failed to terminate container: %s", err)
+			}()
+
+			endpoint, err := mongodbContainer.ConnectionString(ctx)
+			assert.NoError(t, err, "failed to get connection string: %s", err)
+
+			mongoClient, err := mongo.Connect(ctx, options.Client().ApplyURI(endpoint))
+			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
+
+			err = mongoClient.Ping(ctx, nil)
+			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
+
+			now := time.Now()
+			_, err = mongoClient.
+				Database(DATABASE_NAME).
+				Collection(COLLECTION_NAME).
+				InsertOne(ctx, &User{
+					Id:        "randomID",
+					FirstName: "testName",
+					LastName:  "testLastName",
+					Nickname:  "testNickname",
+					Email:     "testEmail@email.com",
+					Country:   "UK",
+					Password:  "testPwd",
+					CreatedAt: now,
+					UpdatedAt: now,
+				})
+			assert.NoError(t, err)
+
+			userRepo := NewUserRepository(mongoClient)
+			err = userRepo.UpdateUser(ctx, &User{
+				Id:        "randomID",
+				FirstName: "updatedFirstName",
+				LastName:  "testLastName",
+				Nickname:  "testNickname",
+				Email:     "testEmail@email.com",
+				Country:   "UK",
+				Password:  "testPassword",
+			})
+			assert.NoError(t, err)
+
+			result := mongoClient.
+				Database(DATABASE_NAME).
+				Collection(COLLECTION_NAME).
+				FindOne(ctx, bson.M{"_id": "randomID"})
+			assert.NoError(t, result.Err())
+			userResult := &User{}
+			err = result.Decode(userResult)
+			assert.NoError(t, err)
+			assert.NotNil(t, userResult)
+			assert.Equal(t, "updatedFirstName", userResult.FirstName)
+			assert.Equal(t, "testNickname", userResult.Nickname)
+			assert.Equal(t, "testEmail@email.com", userResult.Email)
+			assert.NotEqual(t, userResult.CreatedAt, userResult.UpdatedAt)
+		})
 
 	})
 

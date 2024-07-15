@@ -18,6 +18,8 @@ const (
 
 var (
 	ErrUserAlreadyExist = errors.New("the user already exist in the db")
+	ErrUserNotFound     = errors.New("the user doesn't exist in the db")
+	ErrNothingToUpdate  = errors.New("there's anything to update")
 )
 
 type UserRepository struct {
@@ -48,6 +50,62 @@ func (u *UserRepository) AddUser(ctx context.Context, user *User) error {
 	return nil
 }
 
+func (u *UserRepository) UpdateUser(ctx context.Context, user *User) error {
+	log.Println("Updating user in the database")
+
+	updatedUser, err := createUpdatedUser(user)
+	if err != nil {
+		return err
+	}
+
+	_, err = u.collection.UpdateByID(ctx, user.Id, updatedUser)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func createUpdatedUser(user *User) (bson.M, error) {
+	updateFields := bson.M{}
+
+	if user.FirstName != "" {
+		updateFields["first_name"] = user.FirstName
+	}
+
+	if user.LastName != "" {
+		updateFields["last_name"] = user.LastName
+	}
+
+	if user.Nickname != "" {
+		updateFields["nickname"] = user.Nickname
+	}
+
+	if user.Password != "" {
+		hashedPassword, err := hashPassword(user.Password)
+		if err != nil {
+			return nil, err
+		}
+		updateFields["password"] = hashedPassword
+	}
+
+	if user.Email != "" {
+		updateFields["email"] = user.Email
+	}
+
+	if user.Country != "" {
+		updateFields["country"] = user.Country
+	}
+
+	updateFields["updated_at"] = time.Now()
+
+	if len(updateFields) == 0 {
+		return nil, ErrNothingToUpdate
+	}
+
+	return bson.M{"$set": updateFields}, nil
+}
+
 func userAlreadyExists(ctx context.Context, collection *mongo.Collection, nickname, email string) error {
 	count, err := collection.CountDocuments(ctx, bson.M{"nickname": nickname, "email": email})
 	if err != nil {
@@ -62,13 +120,21 @@ func userAlreadyExists(ctx context.Context, collection *mongo.Collection, nickna
 }
 
 func addHashedPassword(user *User) error {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	hashedPassword, err := hashPassword(user.Password)
 	if err != nil {
 		return err
 	}
 
-	user.Password = string(hashedPassword)
+	user.Password = hashedPassword
 	return nil
+}
+
+func hashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashedPassword), nil
 }
 
 func setCreationTime(user *User) {
