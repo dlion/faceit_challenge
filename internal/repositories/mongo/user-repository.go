@@ -8,6 +8,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -83,6 +84,57 @@ func (u *UserRepository) RemoveUser(ctx context.Context, user *User) error {
 	}
 
 	return nil
+}
+
+func (u *UserRepository) GetUsers(ctx context.Context, firstName, lastName, nickname, country, email *string, limit *int64) (*mongo.Cursor, error) {
+
+	query := buildUserQueryFilter(firstName, lastName, nickname, country, email)
+
+	log.Printf("Getting users from the database with filters: %+v", query)
+
+	if limit == nil {
+		limit = int64Ptr(10)
+	}
+
+	cursor, err := u.collection.Find(ctx, query, &options.FindOptions{
+		Limit: limit,
+		Sort:  bson.D{{Key: "created_at", Value: -1}},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return cursor, nil
+}
+
+func buildUserQueryFilter(firstName, lastName, nickname, country, email *string) bson.M {
+	query := bson.M{}
+
+	if firstName != nil {
+		query["first_name"] = *firstName
+	}
+
+	if lastName != nil {
+		query["last_name"] = *lastName
+	}
+
+	if nickname != nil {
+		query["nickname"] = *nickname
+	}
+
+	if country != nil {
+		query["country"] = *country
+	}
+
+	if email != nil {
+		query["email"] = *email
+	}
+
+	return query
+}
+
+func int64Ptr(value int64) *int64 {
+	return &value
 }
 
 func createUpdatedUser(user *User) (bson.M, error) {

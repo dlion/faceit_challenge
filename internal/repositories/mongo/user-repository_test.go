@@ -294,8 +294,93 @@ func TestRepository(t *testing.T) {
 		})
 	})
 
-	t.Run("Return a paginated list of users, filtering by some criterias", func(t *testing.T) {
-		
+	t.Run("Return a paginated list of users", func(t *testing.T) {
+		t.Run("Build a user query filter based on Country", func(t *testing.T) {
+			countryFilter := "UK"
+			query := buildUserQueryFilter(nil, nil, nil, &countryFilter, nil)
 
+			assert.Equal(t, query, bson.M{"country": "UK"})
+		})
+
+		t.Run("Just a paginated list of users filtered by country", func(t *testing.T) {
+			ctx := context.Background()
+
+			mongodbContainer, err := mongodb.Run(ctx, "mongo:7")
+			assert.NoError(t, err, "failed to terminate container: %s", err)
+
+			defer func() {
+				err := mongodbContainer.Terminate(ctx)
+				assert.NoError(t, err, "failed to terminate container: %s", err)
+			}()
+
+			endpoint, err := mongodbContainer.ConnectionString(ctx)
+			assert.NoError(t, err, "failed to get connection string: %s", err)
+
+			mongoClient, err := mongo.Connect(ctx, options.Client().ApplyURI(endpoint))
+			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
+
+			err = mongoClient.Ping(ctx, nil)
+			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
+
+			now := time.Now()
+			_, err = mongoClient.
+				Database(DATABASE_NAME).
+				Collection(COLLECTION_NAME).
+				InsertOne(ctx, &User{
+					Id:        "randomID",
+					FirstName: "testName",
+					LastName:  "testLastName",
+					Nickname:  "testNickname",
+					Email:     "testEmail@email.com",
+					Country:   "UK",
+					Password:  "testPwd",
+					CreatedAt: now,
+					UpdatedAt: now,
+				})
+			assert.NoError(t, err)
+			_, err = mongoClient.
+				Database(DATABASE_NAME).
+				Collection(COLLECTION_NAME).
+				InsertOne(ctx, &User{
+					Id:        "randomID1",
+					FirstName: "testName",
+					LastName:  "testLastName",
+					Nickname:  "testNickname1",
+					Email:     "testEmail1@email.com",
+					Country:   "UK",
+					Password:  "testPwd",
+					CreatedAt: now,
+					UpdatedAt: now,
+				})
+			assert.NoError(t, err)
+			_, err = mongoClient.
+				Database(DATABASE_NAME).
+				Collection(COLLECTION_NAME).
+				InsertOne(ctx, &User{
+					Id:        "randomID2",
+					FirstName: "testName",
+					LastName:  "testLastName",
+					Nickname:  "testNickname2",
+					Email:     "testEmail2@email.com",
+					Country:   "ITA",
+					Password:  "testPwd",
+					CreatedAt: now,
+					UpdatedAt: now,
+				})
+			assert.NoError(t, err)
+
+			userRepo := NewUserRepository(mongoClient)
+			countryFilter := "UK"
+			usersCursor, err := userRepo.GetUsers(ctx, nil, nil, nil, &countryFilter, nil, nil)
+			assert.NoError(t, err)
+			defer usersCursor.Close(ctx)
+
+			var users []User
+			err = usersCursor.All(ctx, &users)
+			assert.NoError(t, err)
+
+			assert.Equal(t, users[0].Id, "randomID")
+			assert.Equal(t, users[1].Id, "randomID1")
+		})
 	})
 }
