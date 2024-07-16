@@ -31,7 +31,7 @@ func NewUserRepository(client *mongo.Client) *UserRepository {
 }
 
 func (u *UserRepository) AddUser(ctx context.Context, user *User) error {
-	log.Println("Adding a user to the database")
+	log.Printf("Adding a user to the database")
 
 	if err := userAlreadyExists(ctx, u.collection, user.Nickname, user.Email); err != nil {
 		return err
@@ -51,7 +51,7 @@ func (u *UserRepository) AddUser(ctx context.Context, user *User) error {
 }
 
 func (u *UserRepository) UpdateUser(ctx context.Context, user *User) error {
-	log.Println("Updating user in the database")
+	log.Printf("Updating user (%s) in the database", user.Id)
 
 	updatedUser, err := createUpdatedUser(user)
 	if err != nil {
@@ -71,7 +71,7 @@ func (u *UserRepository) UpdateUser(ctx context.Context, user *User) error {
 }
 
 func (u *UserRepository) RemoveUser(ctx context.Context, user *User) error {
-	log.Println("Removing user from the database")
+	log.Printf("Removing user (%s) from the database", user.Id)
 
 	deletedResult, err := u.collection.DeleteOne(ctx, bson.M{"_id": user.Id})
 	if err != nil {

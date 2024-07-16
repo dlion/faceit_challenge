@@ -295,6 +295,7 @@ func TestRepository(t *testing.T) {
 	})
 
 	t.Run("Return a paginated list of users, filtering by some criterias", func(t *testing.T) {
+		
 
 	})
 }
