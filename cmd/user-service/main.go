@@ -1,7 +1,38 @@
 package main
 
-import "fmt"
+import (
+	"context"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/dlion/faceit_challenge/internal/api/http"
+)
+
+const (
+	WR_TIMEOUT   = 15
+	IDLE_TIMEOUT = 60
+)
 
 func main() {
-	fmt.Println("Hello World")
+	httpServer := http.NewServer(":80", WR_TIMEOUT, IDLE_TIMEOUT)
+	httpServer.Start()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGTERM, syscall.SIGINT)
+
+	sig := <-c
+	log.Printf("Received signal: %s. Initiating graceful shutdown...", sig)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	err := httpServer.Shutdown(ctx)
+	if err != nil {
+		log.Fatalf("Failed to shutdown the HTTP server: %s", err.Error())
+	}
+
+	log.Println("Server gracefully stopped")
 }
