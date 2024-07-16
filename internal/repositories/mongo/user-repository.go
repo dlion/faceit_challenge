@@ -58,9 +58,28 @@ func (u *UserRepository) UpdateUser(ctx context.Context, user *User) error {
 		return err
 	}
 
-	_, err = u.collection.UpdateByID(ctx, user.Id, updatedUser)
+	updatedResult, err := u.collection.UpdateByID(ctx, user.Id, updatedUser)
 	if err != nil {
 		return err
+	}
+
+	if updatedResult.MatchedCount == 0 {
+		return ErrUserNotFound
+	}
+
+	return nil
+}
+
+func (u *UserRepository) RemoveUser(ctx context.Context, user *User) error {
+	log.Println("Removing user from the database")
+
+	deletedResult, err := u.collection.DeleteOne(ctx, bson.M{"_id": user.Id})
+	if err != nil {
+		return err
+	}
+
+	if deletedResult.DeletedCount == 0 {
+		return ErrUserNotFound
 	}
 
 	return nil

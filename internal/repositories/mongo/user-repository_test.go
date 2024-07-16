@@ -110,7 +110,7 @@ func TestRepository(t *testing.T) {
 				Country:   "UK",
 				Password:  "testPassword",
 			})
-			assert.Error(t, err, ErrUserAlreadyExist.Error())
+			assert.Error(t, err)
 		})
 	})
 
@@ -180,10 +180,118 @@ func TestRepository(t *testing.T) {
 			assert.NotEqual(t, userResult.CreatedAt, userResult.UpdatedAt)
 		})
 
+		t.Run("Return an error if the user doesn't exist", func(t *testing.T) {
+			ctx := context.Background()
+
+			mongodbContainer, err := mongodb.Run(ctx, "mongo:7")
+			assert.NoError(t, err, "failed to terminate container: %s", err)
+
+			defer func() {
+				err := mongodbContainer.Terminate(ctx)
+				assert.NoError(t, err, "failed to terminate container: %s", err)
+			}()
+
+			endpoint, err := mongodbContainer.ConnectionString(ctx)
+			assert.NoError(t, err, "failed to get connection string: %s", err)
+
+			mongoClient, err := mongo.Connect(ctx, options.Client().ApplyURI(endpoint))
+			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
+
+			err = mongoClient.Ping(ctx, nil)
+			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
+
+			userRepo := NewUserRepository(mongoClient)
+			err = userRepo.UpdateUser(ctx, &User{
+				Id:        "randomID",
+				FirstName: "updatedFirstName",
+				LastName:  "testLastName",
+				Nickname:  "testNickname",
+				Email:     "testEmail@email.com",
+				Country:   "UK",
+				Password:  "testPassword",
+			})
+			assert.Error(t, err)
+		})
+
 	})
 
 	t.Run("Remove a user", func(t *testing.T) {
+		t.Run("Remove an existing user", func(t *testing.T) {
+			ctx := context.Background()
 
+			mongodbContainer, err := mongodb.Run(ctx, "mongo:7")
+			assert.NoError(t, err, "failed to terminate container: %s", err)
+
+			defer func() {
+				err := mongodbContainer.Terminate(ctx)
+				assert.NoError(t, err, "failed to terminate container: %s", err)
+			}()
+
+			endpoint, err := mongodbContainer.ConnectionString(ctx)
+			assert.NoError(t, err, "failed to get connection string: %s", err)
+
+			mongoClient, err := mongo.Connect(ctx, options.Client().ApplyURI(endpoint))
+			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
+
+			err = mongoClient.Ping(ctx, nil)
+			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
+
+			now := time.Now()
+			_, err = mongoClient.
+				Database(DATABASE_NAME).
+				Collection(COLLECTION_NAME).
+				InsertOne(ctx, &User{
+					Id:        "randomID",
+					FirstName: "testName",
+					LastName:  "testLastName",
+					Nickname:  "testNickname",
+					Email:     "testEmail@email.com",
+					Country:   "UK",
+					Password:  "testPwd",
+					CreatedAt: now,
+					UpdatedAt: now,
+				})
+			assert.NoError(t, err)
+
+			userRepo := NewUserRepository(mongoClient)
+			err = userRepo.RemoveUser(ctx, &User{Id: "randomID"})
+
+			assert.NoError(t, err)
+			result := mongoClient.
+				Database(DATABASE_NAME).
+				Collection(COLLECTION_NAME).
+				FindOne(ctx, bson.M{"_id": "randomID"})
+
+			userResult := &User{}
+			err = result.Decode(userResult)
+			assert.Error(t, err)
+		})
+
+		t.Run("Return an error if the user doesn't exist", func(t *testing.T) {
+			ctx := context.Background()
+
+			mongodbContainer, err := mongodb.Run(ctx, "mongo:7")
+			assert.NoError(t, err, "failed to terminate container: %s", err)
+
+			defer func() {
+				err := mongodbContainer.Terminate(ctx)
+				assert.NoError(t, err, "failed to terminate container: %s", err)
+			}()
+
+			endpoint, err := mongodbContainer.ConnectionString(ctx)
+			assert.NoError(t, err, "failed to get connection string: %s", err)
+
+			mongoClient, err := mongo.Connect(ctx, options.Client().ApplyURI(endpoint))
+			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
+
+			err = mongoClient.Ping(ctx, nil)
+			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
+
+			userRepo := NewUserRepository(mongoClient)
+			err = userRepo.RemoveUser(ctx, &User{Id: "randomID"})
+
+			assert.Error(t, err)
+		})
 	})
 
 	t.Run("Return a paginated list of users, filtering by some criterias", func(t *testing.T) {
