@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dlion/faceit_challenge/internal/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go/modules/mongodb"
 	"go.mongodb.org/mongo-driver/bson"
@@ -295,13 +296,6 @@ func TestRepository(t *testing.T) {
 	})
 
 	t.Run("Return a paginated list of users", func(t *testing.T) {
-		t.Run("Build a user query filter based on Country", func(t *testing.T) {
-			countryFilter := "UK"
-			query := buildUserQueryFilter(nil, nil, nil, &countryFilter, nil)
-
-			assert.Equal(t, query, bson.M{"country": "UK"})
-		})
-
 		t.Run("Just a paginated list of users filtered by country", func(t *testing.T) {
 			ctx := context.Background()
 
@@ -370,8 +364,9 @@ func TestRepository(t *testing.T) {
 			assert.NoError(t, err)
 
 			userRepo := NewUserRepository(mongoClient)
-			countryFilter := "UK"
-			usersCursor, err := userRepo.GetUsers(ctx, nil, nil, nil, &countryFilter, nil, nil)
+			country := "UK"
+			userFilter := domain.NewFilterBuilder().ByCountry(&country).Build()
+			usersCursor, err := userRepo.GetUsers(ctx, userFilter, int64Ptr(10))
 			assert.NoError(t, err)
 			defer usersCursor.Close(ctx)
 
