@@ -87,7 +87,7 @@ func (u *UserRepository) RemoveUser(ctx context.Context, user *User) error {
 	return nil
 }
 
-func (u *UserRepository) GetUsers(ctx context.Context, userFilter domain.Filter, limit *int64) (*mongo.Cursor, error) {
+func (u *UserRepository) GetUsers(ctx context.Context, userFilter domain.Filter, limit, offset *int64) (*mongo.Cursor, error) {
 
 	log.Printf("Getting users from the database with filters: %+v", userFilter.ToBSON())
 
@@ -95,8 +95,13 @@ func (u *UserRepository) GetUsers(ctx context.Context, userFilter domain.Filter,
 		limit = int64Ptr(10)
 	}
 
+	if offset == nil {
+		offset = int64Ptr(0)
+	}
+
 	cursor, err := u.collection.Find(ctx, userFilter.ToBSON(), &options.FindOptions{
 		Limit: limit,
+		Skip:  offset,
 		Sort:  bson.D{{Key: "created_at", Value: -1}},
 	})
 	if err != nil {

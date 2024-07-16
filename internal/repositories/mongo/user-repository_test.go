@@ -366,7 +366,7 @@ func TestRepository(t *testing.T) {
 			userRepo := NewUserRepository(mongoClient)
 			country := "UK"
 			userFilter := domain.NewFilterBuilder().ByCountry(&country).Build()
-			usersCursor, err := userRepo.GetUsers(ctx, userFilter, int64Ptr(10))
+			usersCursor, err := userRepo.GetUsers(ctx, userFilter, int64Ptr(10), int64Ptr(0))
 			assert.NoError(t, err)
 			defer usersCursor.Close(ctx)
 
@@ -374,8 +374,121 @@ func TestRepository(t *testing.T) {
 			err = usersCursor.All(ctx, &users)
 			assert.NoError(t, err)
 
-			assert.Equal(t, users[0].Id, "randomID")
-			assert.Equal(t, users[1].Id, "randomID1")
+			assert.Equal(t, "randomID", users[0].Id)
+			assert.Equal(t, "randomID1", users[1].Id)
+		})
+
+		t.Run("Just a paginated list of users filtered by country and with an offset", func(t *testing.T) {
+			ctx := context.Background()
+
+			mongodbContainer, err := mongodb.Run(ctx, "mongo:7")
+			assert.NoError(t, err, "failed to terminate container: %s", err)
+
+			defer func() {
+				err := mongodbContainer.Terminate(ctx)
+				assert.NoError(t, err, "failed to terminate container: %s", err)
+			}()
+
+			endpoint, err := mongodbContainer.ConnectionString(ctx)
+			assert.NoError(t, err, "failed to get connection string: %s", err)
+
+			mongoClient, err := mongo.Connect(ctx, options.Client().ApplyURI(endpoint))
+			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
+
+			err = mongoClient.Ping(ctx, nil)
+			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
+
+			now := time.Now()
+			_, err = mongoClient.
+				Database(DATABASE_NAME).
+				Collection(COLLECTION_NAME).
+				InsertOne(ctx, &User{
+					Id:        "randomID",
+					FirstName: "testName",
+					LastName:  "testLastName",
+					Nickname:  "testNickname",
+					Email:     "testEmail@email.com",
+					Country:   "UK",
+					Password:  "testPwd",
+					CreatedAt: now,
+					UpdatedAt: now,
+				})
+			assert.NoError(t, err)
+			_, err = mongoClient.
+				Database(DATABASE_NAME).
+				Collection(COLLECTION_NAME).
+				InsertOne(ctx, &User{
+					Id:        "randomID1",
+					FirstName: "testName",
+					LastName:  "testLastName",
+					Nickname:  "testNickname1",
+					Email:     "testEmail1@email.com",
+					Country:   "UK",
+					Password:  "testPwd",
+					CreatedAt: now,
+					UpdatedAt: now,
+				})
+			assert.NoError(t, err)
+			_, err = mongoClient.
+				Database(DATABASE_NAME).
+				Collection(COLLECTION_NAME).
+				InsertOne(ctx, &User{
+					Id:        "randomID2",
+					FirstName: "testName",
+					LastName:  "testLastName",
+					Nickname:  "testNickname2",
+					Email:     "testEmail2@email.com",
+					Country:   "ITA",
+					Password:  "testPwd",
+					CreatedAt: now,
+					UpdatedAt: now,
+				})
+			assert.NoError(t, err)
+			_, err = mongoClient.
+				Database(DATABASE_NAME).
+				Collection(COLLECTION_NAME).
+				InsertOne(ctx, &User{
+					Id:        "randomID3",
+					FirstName: "testName",
+					LastName:  "testLastName",
+					Nickname:  "testNickname3",
+					Email:     "testEmail3@email.com",
+					Country:   "UK",
+					Password:  "testPwd",
+					CreatedAt: now,
+					UpdatedAt: now,
+				})
+			assert.NoError(t, err)
+			_, err = mongoClient.
+				Database(DATABASE_NAME).
+				Collection(COLLECTION_NAME).
+				InsertOne(ctx, &User{
+					Id:        "randomID4",
+					FirstName: "testName",
+					LastName:  "testLastName",
+					Nickname:  "testNickname4",
+					Email:     "testEmail4@email.com",
+					Country:   "UK",
+					Password:  "testPwd",
+					CreatedAt: now,
+					UpdatedAt: now,
+				})
+			assert.NoError(t, err)
+
+			userRepo := NewUserRepository(mongoClient)
+			country := "UK"
+			userFilter := domain.NewFilterBuilder().ByCountry(&country).Build()
+			usersCursor, err := userRepo.GetUsers(ctx, userFilter, int64Ptr(2), int64Ptr(1))
+			assert.NoError(t, err)
+			defer usersCursor.Close(ctx)
+
+			var users []User
+			err = usersCursor.All(ctx, &users)
+			assert.NoError(t, err)
+
+			assert.Len(t, users, 2)
+			assert.Equal(t, "randomID1", users[0].Id)
+			assert.Equal(t, "randomID3", users[1].Id)
 		})
 	})
 }
