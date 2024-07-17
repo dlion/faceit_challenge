@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"github.com/dlion/faceit_challenge/internal/domain"
+	"github.com/dlion/faceit_challenge/internal/repositories"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
@@ -24,35 +26,47 @@ var (
 	ErrNothingToUpdate  = errors.New("there's anything to update")
 )
 
-type UserRepository struct {
+type UserRepositoryMongoImpl struct {
 	collection *mongo.Collection
 }
 
-func NewUserRepository(client *mongo.Client) *UserRepository {
-	return &UserRepository{collection: client.Database(DATABASE_NAME).Collection(COLLECTION_NAME)}
+func NewUserRepositoryMongoImpl(client *mongo.Client) *UserRepositoryMongoImpl {
+	return &UserRepositoryMongoImpl{collection: client.Database(DATABASE_NAME).Collection(COLLECTION_NAME)}
 }
 
-func (u *UserRepository) AddUser(ctx context.Context, user *User) error {
+func (u *UserRepositoryMongoImpl) AddUser(ctx context.Context, user *repositories.User) (*repositories.User, error) {
 	log.Printf("Adding a user to the database")
 
 	if err := userAlreadyExists(ctx, u.collection, user.Nickname, user.Email); err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := addHashedPassword(user); err != nil {
-		return err
+		return nil, err
 	}
 
 	setCreationTime(user)
 
-	if _, err := u.collection.InsertOne(ctx, user); err != nil {
-		return err
+	insertedUserID, err := u.collection.InsertOne(ctx, user)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	setObjectId(insertedUserID, user)
+
+	return user, nil
 }
 
-func (u *UserRepository) UpdateUser(ctx context.Context, user *User) error {
+func setObjectId(userID *mongo.InsertOneResult, user *repositories.User) {
+	insertedObjectID, ok := userID.InsertedID.(primitive.ObjectID)
+	if !ok {
+		log.Fatalf("Failed to convert the insertedID to an ObjectID")
+	}
+
+	user.Id = insertedObjectID.Hex()
+}
+
+func (u *UserRepositoryMongoImpl) UpdateUser(ctx context.Context, user *repositories.User) error {
 	log.Printf("Updating user (%s) in the database", user.Id)
 
 	updatedUser, err := createUpdatedUser(user)
@@ -72,7 +86,7 @@ func (u *UserRepository) UpdateUser(ctx context.Context, user *User) error {
 	return nil
 }
 
-func (u *UserRepository) RemoveUser(ctx context.Context, user *User) error {
+func (u *UserRepositoryMongoImpl) RemoveUser(ctx context.Context, user *repositories.User) error {
 	log.Printf("Removing user (%s) from the database", user.Id)
 
 	deletedResult, err := u.collection.DeleteOne(ctx, bson.M{"_id": user.Id})
@@ -87,7 +101,7 @@ func (u *UserRepository) RemoveUser(ctx context.Context, user *User) error {
 	return nil
 }
 
-func (u *UserRepository) GetUsers(ctx context.Context, userFilter domain.Filter, limit, offset *int64) (*mongo.Cursor, error) {
+func (u *UserRepositoryMongoImpl) GetUsers(ctx context.Context, userFilter domain.Filter, limit, offset *int64) (*mongo.Cursor, error) {
 
 	log.Printf("Getting users from the database with filters: %+v", userFilter.ToBSON())
 
@@ -115,7 +129,7 @@ func int64Ptr(value int64) *int64 {
 	return &value
 }
 
-func createUpdatedUser(user *User) (bson.M, error) {
+func createUpdatedUser(user *repositories.User) (bson.M, error) {
 	updateFields := bson.M{}
 
 	if user.FirstName != "" {
@@ -168,7 +182,7 @@ func userAlreadyExists(ctx context.Context, collection *mongo.Collection, nickna
 	return nil
 }
 
-func addHashedPassword(user *User) error {
+func addHashedPassword(user *repositories.User) error {
 	hashedPassword, err := hashPassword(user.Password)
 	if err != nil {
 		return err
@@ -186,7 +200,7 @@ func hashPassword(password string) (string, error) {
 	return string(hashedPassword), nil
 }
 
-func setCreationTime(user *User) {
+func setCreationTime(user *repositories.User) {
 	now := time.Now()
 	user.CreatedAt = now
 	user.UpdatedAt = now

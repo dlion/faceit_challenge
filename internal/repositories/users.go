@@ -13,3 +13,14 @@ type User struct {
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 }
+
+func NewUser(firstName, lastName, nickname, password, email, country string) *User {
+	return &User{
+		FirstName: firstName,
+		LastName:  lastName,
+		Nickname:  nickname,
+		Password:  password,
+		Email:     email,
+		Country:   country,
+	}
+}

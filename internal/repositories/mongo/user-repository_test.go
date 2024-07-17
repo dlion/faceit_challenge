@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/dlion/faceit_challenge/internal/domain"
+	"github.com/dlion/faceit_challenge/internal/repositories"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go/modules/mongodb"
 	"go.mongodb.org/mongo-driver/bson"
@@ -36,8 +37,8 @@ func TestRepository(t *testing.T) {
 			err = mongoClient.Ping(ctx, nil)
 			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
 
-			userRepo := NewUserRepository(mongoClient)
-			userRepo.AddUser(ctx, &User{
+			userRepo := NewUserRepositoryMongoImpl(mongoClient)
+			userRepo.AddUser(ctx, &repositories.User{
 				FirstName: "testName",
 				LastName:  "testLastName",
 				Nickname:  "testNickname",
@@ -52,7 +53,7 @@ func TestRepository(t *testing.T) {
 				FindOne(ctx, bson.M{"nickname": "testNickname", "email": "testEmail@email.com"})
 
 			assert.NoError(t, result.Err())
-			userResult := &User{}
+			userResult := &repositories.User{}
 			err = result.Decode(userResult)
 			assert.NoError(t, err)
 			assert.NotNil(t, userResult)
@@ -91,7 +92,7 @@ func TestRepository(t *testing.T) {
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
-				InsertOne(ctx, &User{
+				InsertOne(ctx, &repositories.User{
 					Id:        "randomID",
 					FirstName: "testName",
 					LastName:  "testLastName",
@@ -102,8 +103,8 @@ func TestRepository(t *testing.T) {
 				})
 			assert.NoError(t, err)
 
-			userRepo := NewUserRepository(mongoClient)
-			err = userRepo.AddUser(ctx, &User{
+			userRepo := NewUserRepositoryMongoImpl(mongoClient)
+			_, err = userRepo.AddUser(ctx, &repositories.User{
 				FirstName: "testName",
 				LastName:  "testLastName",
 				Nickname:  "testNickname",
@@ -141,7 +142,7 @@ func TestRepository(t *testing.T) {
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
-				InsertOne(ctx, &User{
+				InsertOne(ctx, &repositories.User{
 					Id:        "randomID",
 					FirstName: "testName",
 					LastName:  "testLastName",
@@ -154,8 +155,8 @@ func TestRepository(t *testing.T) {
 				})
 			assert.NoError(t, err)
 
-			userRepo := NewUserRepository(mongoClient)
-			err = userRepo.UpdateUser(ctx, &User{
+			userRepo := NewUserRepositoryMongoImpl(mongoClient)
+			err = userRepo.UpdateUser(ctx, &repositories.User{
 				Id:        "randomID",
 				FirstName: "updatedFirstName",
 				LastName:  "testLastName",
@@ -171,7 +172,7 @@ func TestRepository(t *testing.T) {
 				Collection(COLLECTION_NAME).
 				FindOne(ctx, bson.M{"_id": "randomID"})
 			assert.NoError(t, result.Err())
-			userResult := &User{}
+			userResult := &repositories.User{}
 			err = result.Decode(userResult)
 			assert.NoError(t, err)
 			assert.NotNil(t, userResult)
@@ -201,8 +202,8 @@ func TestRepository(t *testing.T) {
 			err = mongoClient.Ping(ctx, nil)
 			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
 
-			userRepo := NewUserRepository(mongoClient)
-			err = userRepo.UpdateUser(ctx, &User{
+			userRepo := NewUserRepositoryMongoImpl(mongoClient)
+			err = userRepo.UpdateUser(ctx, &repositories.User{
 				Id:        "randomID",
 				FirstName: "updatedFirstName",
 				LastName:  "testLastName",
@@ -241,7 +242,7 @@ func TestRepository(t *testing.T) {
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
-				InsertOne(ctx, &User{
+				InsertOne(ctx, &repositories.User{
 					Id:        "randomID",
 					FirstName: "testName",
 					LastName:  "testLastName",
@@ -254,8 +255,8 @@ func TestRepository(t *testing.T) {
 				})
 			assert.NoError(t, err)
 
-			userRepo := NewUserRepository(mongoClient)
-			err = userRepo.RemoveUser(ctx, &User{Id: "randomID"})
+			userRepo := NewUserRepositoryMongoImpl(mongoClient)
+			err = userRepo.RemoveUser(ctx, &repositories.User{Id: "randomID"})
 
 			assert.NoError(t, err)
 			result := mongoClient.
@@ -263,7 +264,7 @@ func TestRepository(t *testing.T) {
 				Collection(COLLECTION_NAME).
 				FindOne(ctx, bson.M{"_id": "randomID"})
 
-			userResult := &User{}
+			userResult := &repositories.User{}
 			err = result.Decode(userResult)
 			assert.Error(t, err)
 		})
@@ -288,8 +289,8 @@ func TestRepository(t *testing.T) {
 			err = mongoClient.Ping(ctx, nil)
 			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
 
-			userRepo := NewUserRepository(mongoClient)
-			err = userRepo.RemoveUser(ctx, &User{Id: "randomID"})
+			userRepo := NewUserRepositoryMongoImpl(mongoClient)
+			err = userRepo.RemoveUser(ctx, &repositories.User{Id: "randomID"})
 
 			assert.Error(t, err)
 		})
@@ -320,7 +321,7 @@ func TestRepository(t *testing.T) {
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
-				InsertOne(ctx, &User{
+				InsertOne(ctx, &repositories.User{
 					Id:        "randomID",
 					FirstName: "testName",
 					LastName:  "testLastName",
@@ -335,7 +336,7 @@ func TestRepository(t *testing.T) {
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
-				InsertOne(ctx, &User{
+				InsertOne(ctx, &repositories.User{
 					Id:        "randomID1",
 					FirstName: "testName",
 					LastName:  "testLastName",
@@ -350,7 +351,7 @@ func TestRepository(t *testing.T) {
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
-				InsertOne(ctx, &User{
+				InsertOne(ctx, &repositories.User{
 					Id:        "randomID2",
 					FirstName: "testName",
 					LastName:  "testLastName",
@@ -363,14 +364,14 @@ func TestRepository(t *testing.T) {
 				})
 			assert.NoError(t, err)
 
-			userRepo := NewUserRepository(mongoClient)
+			userRepo := NewUserRepositoryMongoImpl(mongoClient)
 			country := "UK"
 			userFilter := domain.NewFilterBuilder().ByCountry(&country).Build()
 			usersCursor, err := userRepo.GetUsers(ctx, userFilter, int64Ptr(10), int64Ptr(0))
 			assert.NoError(t, err)
 			defer usersCursor.Close(ctx)
 
-			var users []User
+			var users []repositories.User
 			err = usersCursor.All(ctx, &users)
 			assert.NoError(t, err)
 
@@ -402,7 +403,7 @@ func TestRepository(t *testing.T) {
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
-				InsertOne(ctx, &User{
+				InsertOne(ctx, &repositories.User{
 					Id:        "randomID",
 					FirstName: "testName",
 					LastName:  "testLastName",
@@ -417,7 +418,7 @@ func TestRepository(t *testing.T) {
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
-				InsertOne(ctx, &User{
+				InsertOne(ctx, &repositories.User{
 					Id:        "randomID1",
 					FirstName: "testName",
 					LastName:  "testLastName",
@@ -432,7 +433,7 @@ func TestRepository(t *testing.T) {
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
-				InsertOne(ctx, &User{
+				InsertOne(ctx, &repositories.User{
 					Id:        "randomID2",
 					FirstName: "testName",
 					LastName:  "testLastName",
@@ -447,7 +448,7 @@ func TestRepository(t *testing.T) {
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
-				InsertOne(ctx, &User{
+				InsertOne(ctx, &repositories.User{
 					Id:        "randomID3",
 					FirstName: "testName",
 					LastName:  "testLastName",
@@ -462,7 +463,7 @@ func TestRepository(t *testing.T) {
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
-				InsertOne(ctx, &User{
+				InsertOne(ctx, &repositories.User{
 					Id:        "randomID4",
 					FirstName: "testName",
 					LastName:  "testLastName",
@@ -475,14 +476,14 @@ func TestRepository(t *testing.T) {
 				})
 			assert.NoError(t, err)
 
-			userRepo := NewUserRepository(mongoClient)
+			userRepo := NewUserRepositoryMongoImpl(mongoClient)
 			country := "UK"
 			userFilter := domain.NewFilterBuilder().ByCountry(&country).Build()
 			usersCursor, err := userRepo.GetUsers(ctx, userFilter, int64Ptr(2), int64Ptr(1))
 			assert.NoError(t, err)
 			defer usersCursor.Close(ctx)
 
-			var users []User
+			var users []repositories.User
 			err = usersCursor.All(ctx, &users)
 			assert.NoError(t, err)
 
