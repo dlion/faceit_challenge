@@ -83,7 +83,7 @@ func TestUserService(t *testing.T) {
 		assert.Equal(t, "TestLastName", updatedUser.LastName)
 		assert.Equal(t, "UK", updatedUser.Country)
 		assert.Equal(t, "emailTest@test.com", updatedUser.Email)
-		assert.Equal(t, later.String(), updatedUser.UpdatedAt)
+		assert.Equal(t, later.Format(time.RFC3339), updatedUser.UpdatedAt)
 	})
 
 	t.Run("Remove an existing user", func(t *testing.T) {

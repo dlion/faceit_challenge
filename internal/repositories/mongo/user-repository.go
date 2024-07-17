@@ -63,7 +63,7 @@ func (u *UserRepositoryMongoImpl) AddUser(ctx context.Context, user *repositorie
 }
 
 func (u *UserRepositoryMongoImpl) UpdateUser(ctx context.Context, user *repositories.User) (*repositories.User, error) {
-	log.Printf("Updating user (%s) in the database", user.Id)
+	log.Printf("Updating user (%s) in the database", user.Id.Hex())
 
 	updatedUser, err := createUpdatedUser(user)
 	if err != nil {

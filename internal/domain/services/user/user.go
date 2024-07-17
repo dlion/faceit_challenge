@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/dlion/faceit_challenge/internal"
 	"github.com/dlion/faceit_challenge/internal/repositories"
@@ -12,6 +13,7 @@ import (
 
 type UserService interface {
 	NewUser(context.Context, NewUser) (*User, error)
+	UpdateUser(context.Context, UpdateUser) (*User, error)
 }
 
 type UserServiceImpl struct {
@@ -94,8 +96,8 @@ func (u *UserServiceImpl) GetUsers(ctx context.Context, userFilter *internal.Use
 func toUser(user *repositories.User) *User {
 	return &User{
 		Id:        user.Id.Hex(),
-		CreatedAt: user.CreatedAt.String(),
-		UpdatedAt: user.UpdatedAt.String(),
+		CreatedAt: user.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: user.UpdatedAt.Format(time.RFC3339),
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
 		Nickname:  user.Nickname,

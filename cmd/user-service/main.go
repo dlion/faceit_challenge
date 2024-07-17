@@ -22,7 +22,6 @@ const (
 
 func main() {
 	httpServer := http.NewServer(":80", WR_TIMEOUT, IDLE_TIMEOUT)
-	httpServer.Router.HandleFunc("/api/health", http.HealthCheckHandler).Methods("GET")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
@@ -44,6 +43,7 @@ func main() {
 
 	httpServer.Router.HandleFunc("/api/health", http.HealthCheckHandler).Methods("GET")
 	httpServer.Router.HandleFunc("/api/user", userHandler.AddUserHandler).Methods("POST")
+	httpServer.Router.HandleFunc("/api/user/{id}", userHandler.UpdateUserHandler).Methods("PUT")
 
 	httpServer.HttpServer.Handler = httpServer.Router
 
