@@ -322,11 +322,12 @@ func TestRepository(t *testing.T) {
 			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
 
 			now := time.Now()
+			objectRandom := primitive.NewObjectIDFromTimestamp(now).String()
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
 				InsertOne(ctx, &repositories.User{
-					Id:        "randomID",
+					Id:        objectRandom,
 					FirstName: "testName",
 					LastName:  "testLastName",
 					Nickname:  "testNickname",
@@ -337,34 +338,39 @@ func TestRepository(t *testing.T) {
 					UpdatedAt: now,
 				})
 			assert.NoError(t, err)
+
+			now1 := time.Now()
+			objectRandom1 := primitive.NewObjectIDFromTimestamp(now1).String()
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
 				InsertOne(ctx, &repositories.User{
-					Id:        "randomID1",
+					Id:        objectRandom1,
 					FirstName: "testName",
 					LastName:  "testLastName",
 					Nickname:  "testNickname1",
 					Email:     "testEmail1@email.com",
 					Country:   "UK",
 					Password:  "testPwd",
-					CreatedAt: now,
-					UpdatedAt: now,
+					CreatedAt: now1,
+					UpdatedAt: now1,
 				})
 			assert.NoError(t, err)
+
+			now2 := time.Now()
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
 				InsertOne(ctx, &repositories.User{
-					Id:        "randomID2",
+					Id:        primitive.NewObjectIDFromTimestamp(now2).String(),
 					FirstName: "testName",
 					LastName:  "testLastName",
 					Nickname:  "testNickname2",
 					Email:     "testEmail2@email.com",
 					Country:   "ITA",
 					Password:  "testPwd",
-					CreatedAt: now,
-					UpdatedAt: now,
+					CreatedAt: now2,
+					UpdatedAt: now2,
 				})
 			assert.NoError(t, err)
 
@@ -379,8 +385,8 @@ func TestRepository(t *testing.T) {
 			err = usersCursor.All(ctx, &users)
 			assert.NoError(t, err)
 
-			assert.Equal(t, "randomID", users[0].Id)
-			assert.Equal(t, "randomID1", users[1].Id)
+			assert.Equal(t, objectRandom1, users[0].Id)
+			assert.Equal(t, objectRandom, users[1].Id)
 		})
 
 		t.Run("Just a paginated list of users filtered by country and with an offset", func(t *testing.T) {
@@ -404,11 +410,12 @@ func TestRepository(t *testing.T) {
 			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
 
 			now := time.Now()
+			objectRandom := primitive.NewObjectIDFromTimestamp(now).String()
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
 				InsertOne(ctx, &repositories.User{
-					Id:        "randomID",
+					Id:        objectRandom,
 					FirstName: "testName",
 					LastName:  "testLastName",
 					Nickname:  "testNickname",
@@ -419,64 +426,76 @@ func TestRepository(t *testing.T) {
 					UpdatedAt: now,
 				})
 			assert.NoError(t, err)
+
+			now1 := time.Now()
+			objectRandom1 := primitive.NewObjectIDFromTimestamp(now1).String()
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
 				InsertOne(ctx, &repositories.User{
-					Id:        "randomID1",
+					Id:        objectRandom1,
 					FirstName: "testName",
 					LastName:  "testLastName",
 					Nickname:  "testNickname1",
 					Email:     "testEmail1@email.com",
 					Country:   "UK",
 					Password:  "testPwd",
-					CreatedAt: now,
-					UpdatedAt: now,
+					CreatedAt: now1,
+					UpdatedAt: now1,
 				})
 			assert.NoError(t, err)
+
+			now2 := time.Now()
+			objectRandom2 := primitive.NewObjectIDFromTimestamp(now2).String()
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
 				InsertOne(ctx, &repositories.User{
-					Id:        "randomID2",
+					Id:        objectRandom2,
 					FirstName: "testName",
 					LastName:  "testLastName",
 					Nickname:  "testNickname2",
 					Email:     "testEmail2@email.com",
 					Country:   "ITA",
 					Password:  "testPwd",
-					CreatedAt: now,
-					UpdatedAt: now,
+					CreatedAt: now2,
+					UpdatedAt: now2,
 				})
 			assert.NoError(t, err)
+
+			now3 := time.Now()
+			objectRandom3 := primitive.NewObjectIDFromTimestamp(now3).String()
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
 				InsertOne(ctx, &repositories.User{
-					Id:        "randomID3",
+					Id:        objectRandom3,
 					FirstName: "testName",
 					LastName:  "testLastName",
 					Nickname:  "testNickname3",
 					Email:     "testEmail3@email.com",
 					Country:   "UK",
 					Password:  "testPwd",
-					CreatedAt: now,
-					UpdatedAt: now,
+					CreatedAt: now3,
+					UpdatedAt: now3,
 				})
 			assert.NoError(t, err)
+
+			now4 := time.Now()
+			objectRandom4 := primitive.NewObjectIDFromTimestamp(now4).String()
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
 				InsertOne(ctx, &repositories.User{
-					Id:        "randomID4",
+					Id:        objectRandom4,
 					FirstName: "testName",
 					LastName:  "testLastName",
 					Nickname:  "testNickname4",
 					Email:     "testEmail4@email.com",
 					Country:   "UK",
 					Password:  "testPwd",
-					CreatedAt: now,
-					UpdatedAt: now,
+					CreatedAt: now4,
+					UpdatedAt: now4,
 				})
 			assert.NoError(t, err)
 
@@ -492,8 +511,9 @@ func TestRepository(t *testing.T) {
 			assert.NoError(t, err)
 
 			assert.Len(t, users, 2)
-			assert.Equal(t, "randomID1", users[0].Id)
-			assert.Equal(t, "randomID3", users[1].Id)
+			assert.Equal(t, objectRandom3, users[0].Id)
+			assert.Equal(t, objectRandom1, users[1].Id)
+
 		})
 	})
 }
