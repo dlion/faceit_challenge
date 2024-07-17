@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dlion/faceit_challenge/internal/domain"
 	"github.com/dlion/faceit_challenge/internal/repositories"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -93,6 +92,46 @@ func TestUserService(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
+	t.Run("Get paginated list of users filtered by Conuntry", func(t *testing.T) {
+		mockedRepository := new(MockUserRepository)
+		now := time.Now()
+		var dbUsers []*repositories.User
+		dbUsers = append(dbUsers, &repositories.User{
+			Id:        "66979895733090ace52b13a2",
+			FirstName: "TestFirstName",
+			LastName:  "TestLastName",
+			Country:   "UK",
+			Email:     "emailTest@test.com",
+			Nickname:  "Test",
+			Password:  "1234567",
+			CreatedAt: now,
+			UpdatedAt: now,
+		})
+
+		later := now.Add(time.Duration(20 * time.Second))
+		dbUsers = append(dbUsers, &repositories.User{
+			Id:        "6697c6d1cbfc878bc14673db",
+			FirstName: "TestFirstName1",
+			LastName:  "TestLastName1",
+			Country:   "UK",
+			Email:     "emailTest1@test.com",
+			Nickname:  "Test1",
+			Password:  "12345678",
+			CreatedAt: later,
+			UpdatedAt: later,
+		})
+		mockedRepository.On("GetUsers").Return(dbUsers, nil)
+
+		userService := NewUserService(mockedRepository)
+		country := "UK"
+		users, err := userService.GetUsers(context.TODO(), Query{Country: &country})
+
+		mockedRepository.AssertExpectations(t)
+		assert.NoError(t, err)
+		assert.Len(t, users, 2)
+		assert.Equal(t, "TestFirstName", dbUsers[0].FirstName)
+	})
+
 }
 
 type MockUserRepository struct {
@@ -114,7 +153,7 @@ func (m *MockUserRepository) RemoveUser(ctx context.Context, id string) error {
 	return nil
 }
 
-func (m *MockUserRepository) GetUsers(ctx context.Context, filter domain.Filter, limit *int64, offset *int64) []*repositories.User {
+func (m *MockUserRepository) GetUsers(ctx context.Context, filter repositories.Filter, limit *int64, offset *int64) []*repositories.User {
 	args := m.Called()
 	return args.Get(0).([]*repositories.User)
 }

@@ -1,6 +1,8 @@
-package domain
+package repositories
 
-import "go.mongodb.org/mongo-driver/bson"
+import (
+	"go.mongodb.org/mongo-driver/bson"
+)
 
 type Filter interface {
 	ToBSON() bson.M
