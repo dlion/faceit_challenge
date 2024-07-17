@@ -14,7 +14,7 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 }
 
-func NewUser(firstName, lastName, nickname, password, email, country string) *User {
+func NewRepoUser(firstName, lastName, nickname, password, email, country string) *User {
 	return &User{
 		FirstName: firstName,
 		LastName:  lastName,

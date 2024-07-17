@@ -25,7 +25,7 @@ func (u *UserServiceImpl) NewUser(ctx context.Context, newUser NewUser) (*User, 
 		return nil, err
 	}
 
-	repoUser := repositories.NewUser(newUser.FirstName, newUser.LastName, newUser.Nickname, newUser.Password, newUser.Email, newUser.Country)
+	repoUser := repositories.NewRepoUser(newUser.FirstName, newUser.LastName, newUser.Nickname, newUser.Password, newUser.Email, newUser.Country)
 	addedUser, err := u.repository.AddUser(ctx, repoUser)
 	if err != nil {
 		return nil, err
@@ -40,5 +40,32 @@ func (u *UserServiceImpl) NewUser(ctx context.Context, newUser NewUser) (*User, 
 		Nickname:  addedUser.Nickname,
 		CreatedAt: addedUser.CreatedAt.String(),
 		UpdatedAt: addedUser.CreatedAt.String(),
+	}, nil
+}
+
+func (u *UserServiceImpl) UpdateUser(ctx context.Context, updateUser UpdateUser) (*User, error) {
+	log.Printf("Updating user %s", updateUser.Id)
+
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	err := validate.Struct(updateUser)
+	if err != nil {
+		return nil, err
+	}
+
+	repoUser := repositories.NewRepoUser(updateUser.FirstName, updateUser.LastName, updateUser.Nickname, updateUser.Password, updateUser.Email, updateUser.Country)
+	updatedUser, err := u.repository.UpdateUser(ctx, repoUser)
+	if err != nil {
+		return nil, err
+	}
+
+	return &User{
+		Id:        updatedUser.Id,
+		FirstName: updatedUser.FirstName,
+		LastName:  updatedUser.LastName,
+		Email:     updatedUser.Email,
+		Country:   updatedUser.Country,
+		Nickname:  updatedUser.Nickname,
+		CreatedAt: updatedUser.CreatedAt.String(),
+		UpdatedAt: updatedUser.UpdatedAt.String(),
 	}, nil
 }

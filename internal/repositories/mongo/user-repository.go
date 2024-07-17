@@ -52,34 +52,39 @@ func (u *UserRepositoryMongoImpl) AddUser(ctx context.Context, user *repositorie
 		return nil, err
 	}
 
-	setObjectId(insertedUserID, user)
+	insertedObjectID, ok := insertedUserID.InsertedID.(primitive.ObjectID)
+	if !ok {
+		log.Fatalf("Failed to convert the insertedID to an ObjectID")
+	}
+
+	user.Id = insertedObjectID.Hex()
 
 	return user, nil
 }
 
-func (u *UserRepositoryMongoImpl) UpdateUser(ctx context.Context, user *repositories.User) error {
+func (u *UserRepositoryMongoImpl) UpdateUser(ctx context.Context, user *repositories.User) (*repositories.User, error) {
 	log.Printf("Updating user (%s) in the database", user.Id)
 
 	updatedUser, err := createUpdatedUser(user)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	userId, err := primitive.ObjectIDFromHex(user.Id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	updatedResult, err := u.collection.UpdateByID(ctx, userId.String(), updatedUser)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if updatedResult.MatchedCount == 0 {
-		return ErrUserNotFound
+		return nil, ErrUserNotFound
 	}
 
-	return nil
+	return user, nil
 }
 
 func (u *UserRepositoryMongoImpl) RemoveUser(ctx context.Context, user *repositories.User) error {
@@ -124,15 +129,6 @@ func (u *UserRepositoryMongoImpl) GetUsers(ctx context.Context, userFilter domai
 	}
 
 	return cursor, nil
-}
-
-func setObjectId(userID *mongo.InsertOneResult, user *repositories.User) {
-	insertedObjectID, ok := userID.InsertedID.(primitive.ObjectID)
-	if !ok {
-		log.Fatalf("Failed to convert the insertedID to an ObjectID")
-	}
-
-	user.Id = insertedObjectID.Hex()
 }
 
 func int64Ptr(value int64) *int64 {

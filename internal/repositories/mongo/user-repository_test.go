@@ -159,7 +159,7 @@ func TestRepository(t *testing.T) {
 			assert.NoError(t, err)
 
 			userRepo := NewUserRepositoryMongoImpl(mongoClient)
-			err = userRepo.UpdateUser(ctx, &repositories.User{
+			_, err = userRepo.UpdateUser(ctx, &repositories.User{
 				Id:        objectID.Hex(),
 				FirstName: "updatedFirstName",
 				LastName:  "testLastName",
@@ -205,9 +205,10 @@ func TestRepository(t *testing.T) {
 			err = mongoClient.Ping(ctx, nil)
 			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
 
+			objectRandom := primitive.NewObjectIDFromTimestamp(time.Now()).Hex()
 			userRepo := NewUserRepositoryMongoImpl(mongoClient)
-			err = userRepo.UpdateUser(ctx, &repositories.User{
-				Id:        "randomID",
+			_, err = userRepo.UpdateUser(ctx, &repositories.User{
+				Id:        objectRandom,
 				FirstName: "updatedFirstName",
 				LastName:  "testLastName",
 				Nickname:  "testNickname",

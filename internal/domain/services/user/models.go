@@ -10,7 +10,7 @@ type NewUser struct {
 }
 
 type UpdateUser struct {
-	Id        string `json:"id" validate:"mongodb"`
+	Id        string `json:"id"`
 	FirstName string `json:"first_name,omitempty"`
 	LastName  string `json:"last_name,omitempty"`
 	Nickname  string `json:"nickname,omitempty"`
