@@ -107,7 +107,7 @@ func (u *UserRepositoryMongoImpl) RemoveUser(ctx context.Context, id string) err
 	return nil
 }
 
-func (u *UserRepositoryMongoImpl) GetUsers(ctx context.Context, userFilter domain.Filter, limit, offset *int64) (*mongo.Cursor, error) {
+func (u *UserRepositoryMongoImpl) GetUsers(ctx context.Context, userFilter domain.Filter, limit, offset *int64) ([]*repositories.User, error) {
 
 	log.Printf("Getting users from the database with filters: %+v", userFilter.ToBSON())
 
@@ -128,7 +128,13 @@ func (u *UserRepositoryMongoImpl) GetUsers(ctx context.Context, userFilter domai
 		return nil, err
 	}
 
-	return cursor, nil
+	var users []*repositories.User
+	err = cursor.All(ctx, &users)
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
 
 func int64Ptr(value int64) *int64 {

@@ -378,12 +378,7 @@ func TestRepository(t *testing.T) {
 			userRepo := NewUserRepositoryMongoImpl(mongoClient)
 			country := "UK"
 			userFilter := domain.NewFilterBuilder().ByCountry(&country).Build()
-			usersCursor, err := userRepo.GetUsers(ctx, userFilter, int64Ptr(10), int64Ptr(0))
-			assert.NoError(t, err)
-			defer usersCursor.Close(ctx)
-
-			var users []repositories.User
-			err = usersCursor.All(ctx, &users)
+			users, err := userRepo.GetUsers(ctx, userFilter, int64Ptr(10), int64Ptr(0))
 			assert.NoError(t, err)
 
 			assert.Equal(t, objectRandom1, users[0].Id)
@@ -503,18 +498,12 @@ func TestRepository(t *testing.T) {
 			userRepo := NewUserRepositoryMongoImpl(mongoClient)
 			country := "UK"
 			userFilter := domain.NewFilterBuilder().ByCountry(&country).Build()
-			usersCursor, err := userRepo.GetUsers(ctx, userFilter, int64Ptr(2), int64Ptr(1))
-			assert.NoError(t, err)
-			defer usersCursor.Close(ctx)
-
-			var users []repositories.User
-			err = usersCursor.All(ctx, &users)
+			users, err := userRepo.GetUsers(ctx, userFilter, int64Ptr(2), int64Ptr(1))
 			assert.NoError(t, err)
 
 			assert.Len(t, users, 2)
 			assert.Equal(t, objectRandom3, users[0].Id)
 			assert.Equal(t, objectRandom1, users[1].Id)
-
 		})
 	})
 }

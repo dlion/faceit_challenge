@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dlion/faceit_challenge/internal/domain"
 	"github.com/dlion/faceit_challenge/internal/repositories"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -111,4 +112,9 @@ func (m *MockUserRepository) UpdateUser(ctx context.Context, user *repositories.
 func (m *MockUserRepository) RemoveUser(ctx context.Context, id string) error {
 	m.Called()
 	return nil
+}
+
+func (m *MockUserRepository) GetUsers(ctx context.Context, filter domain.Filter, limit *int64, offset *int64) []*repositories.User {
+	args := m.Called()
+	return args.Get(0).([]*repositories.User)
 }
