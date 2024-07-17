@@ -27,7 +27,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	clientOptions := options.Client().ApplyURI("mongodb://mongo:mongo@localhost:27017/faceit?authSource=admin")
+	clientOptions := options.Client().ApplyURI("mongodb://mongo:mongo@mongodb:27017/faceit?authSource=admin")
 	mongoClient, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		log.Fatalf("Failed to connect to MongoDB: %v", err)
