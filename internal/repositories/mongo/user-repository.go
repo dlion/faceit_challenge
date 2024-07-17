@@ -102,7 +102,7 @@ func (u *UserRepositoryMongoImpl) RemoveUser(ctx context.Context, id string) err
 	return nil
 }
 
-func (u *UserRepositoryMongoImpl) GetUsers(ctx context.Context, userFilter internal.Filter, limit, offset *int64) ([]*repositories.User, error) {
+func (u *UserRepositoryMongoImpl) GetUsers(ctx context.Context, userFilter *internal.UserFilter, limit, offset *int64) ([]*repositories.User, error) {
 
 	log.Printf("Getting users from the database with filters: %+v", userFilter.ToBSON())
 

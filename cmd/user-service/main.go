@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/dlion/faceit_challenge/internal/api/http"
+	"github.com/dlion/faceit_challenge/internal/domain/services/user"
+	repositories "github.com/dlion/faceit_challenge/internal/repositories/mongo"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -36,8 +38,8 @@ func main() {
 		log.Fatalf("Failed to ping MongoDB: %v", err)
 	}
 
-	//userRepo := repositories.NewUserRepositoryMongoImpl(mongoClient)
-	//userService := user.NewUserService(userRepo)
+	userRepo := repositories.NewUserRepositoryMongoImpl(mongoClient)
+	user.NewUserService(userRepo)
 	//userHandler := &http.UserHandler{: userService}
 
 	httpServer.Start()

@@ -76,10 +76,13 @@ func (u *UserServiceImpl) RemoveUser(ctx context.Context, id string) error {
 	return nil
 }
 
-func (u *UserServiceImpl) GetUsers(ctx context.Context, userFilter internal.UserFilter) ([]*User, error) {
+func (u *UserServiceImpl) GetUsers(ctx context.Context, userFilter *internal.UserFilter) ([]*User, error) {
 	log.Printf("Getting users with query: %+v", userFilter)
 
-	users := u.repository.GetUsers(ctx, userFilter, userFilter.Limit, userFilter.Offset)
+	users, err := u.repository.GetUsers(ctx, userFilter, userFilter.Limit, userFilter.Offset)
+	if err != nil {
+		return nil, err
+	}
 
 	respUsers := make([]*User, len(users))
 	for i, u := range users {
