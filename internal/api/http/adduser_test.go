@@ -36,7 +36,7 @@ func TestAddUserHandler(t *testing.T) {
 	rr := httptest.NewRecorder()
 
 	mockedUserService := new(MockUserService)
-	userHandler := UserHandler{userService: mockedUserService}
+	userHandler := UserHandler{UserService: mockedUserService}
 	mockedUserService.On("NewUser").Return(&user.User{
 		Id:        "randomCode",
 		FirstName: "John",

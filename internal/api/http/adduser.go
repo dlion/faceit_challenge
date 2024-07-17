@@ -16,7 +16,7 @@ func (u *UserHandler) AddUserHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	createdUser, err := u.userService.NewUser(req.Context(), newUser)
+	createdUser, err := u.UserService.NewUser(req.Context(), newUser)
 	if err != nil {
 		log.Print(err)
 		http.Error(w, "Failed to create user", http.StatusInternalServerError)

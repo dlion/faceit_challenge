@@ -1,0 +1,59 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: mongodb
+    hostname: mongodb
+    restart: on-failure
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongo
+      - MONGO_INITDB_ROOT_PASSWORD=mongo
+      - MONGO_INITDB_DATABASE=faceit
+    volumes:
+      - mongo:/data/db
+    networks:
+      - default
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: [
+        "CMD",
+        "mongosh",
+        "--quiet",
+        "localhost:27017/faceit",
+        "--eval",
+        "'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'",
+      ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # User service (healthcheck is built in the image)
+  # user-service:
+  #   hostname: user-service
+  #   image: user-service
+  #   build:
+  #     context: .
+  #     dockerfile: ./build/Dockerfile
+  #     target: app
+  #   restart: on-failure
+  #   environment:
+  #     # MongoDB connection string
+  #     - USER_DATABASE_URI=mongodb://mongo:mongo@mongodb:27017/faceit?authSource=admin
+  #     # GRPC Server address
+  #     - USER_SERVER=0.0.0.0:8080
+  #   depends_on:
+  #     mongo:
+  #       condition: service_healthy
+  #   networks:
+  #     - default
+  #   ports:
+  #     - "8080:8080"
+
+# networks:
+#   default:
+#     driver: bridge
+
+volumes:
+  mongo:
+    driver: local

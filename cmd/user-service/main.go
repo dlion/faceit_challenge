@@ -27,7 +27,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	clientOptions := options.Client().ApplyURI("mongodburi")
+	clientOptions := options.Client().ApplyURI("mongodb://mongo:mongo@localhost:27017/faceit?authSource=admin")
 	mongoClient, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		log.Fatalf("Failed to connect to MongoDB: %v", err)
@@ -39,8 +39,13 @@ func main() {
 	}
 
 	userRepo := repositories.NewUserRepositoryMongoImpl(mongoClient)
-	user.NewUserService(userRepo)
-	//userHandler := &http.UserHandler{: userService}
+	userService := user.NewUserService(userRepo)
+	userHandler := &http.UserHandler{UserService: userService}
+
+	httpServer.Router.HandleFunc("/api/health", http.HealthCheckHandler).Methods("GET")
+	httpServer.Router.HandleFunc("/api/user", userHandler.AddUserHandler).Methods("POST")
+
+	httpServer.HttpServer.Handler = httpServer.Router
 
 	httpServer.Start()
 

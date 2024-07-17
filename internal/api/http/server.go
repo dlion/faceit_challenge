@@ -10,8 +10,8 @@ import (
 )
 
 type Server struct {
-	Router *mux.Router
-	server *http.Server
+	Router     *mux.Router
+	HttpServer *http.Server
 }
 
 func NewServer(address string, WRtimeout, idleTimeout int) *Server {
@@ -19,7 +19,7 @@ func NewServer(address string, WRtimeout, idleTimeout int) *Server {
 
 	return &Server{
 		Router: r,
-		server: &http.Server{
+		HttpServer: &http.Server{
 			Addr:         address,
 			WriteTimeout: time.Second * time.Duration(WRtimeout),
 			ReadTimeout:  time.Second * time.Duration(WRtimeout),
@@ -29,10 +29,10 @@ func NewServer(address string, WRtimeout, idleTimeout int) *Server {
 }
 
 func (s *Server) Start() {
-	log.Printf("Starting the server on %s", s.server.Addr)
+	log.Printf("Starting the server on %s", s.HttpServer.Addr)
 
 	go func() {
-		if err := s.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := s.HttpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Printf("Failed to listen and serve: %s", err.Error())
 		}
 	}()
@@ -41,7 +41,7 @@ func (s *Server) Start() {
 func (s *Server) Shutdown(ctx context.Context) error {
 	log.Printf("Shutting down the server")
 
-	if err := s.server.Shutdown(ctx); err != nil {
+	if err := s.HttpServer.Shutdown(ctx); err != nil {
 		return err
 	}
 
