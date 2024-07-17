@@ -17,8 +17,6 @@ type Server struct {
 func NewServer(address string, WRtimeout, idleTimeout int) *Server {
 	r := mux.NewRouter()
 
-	defineRoutes(r)
-
 	return &Server{
 		Router: r,
 		server: &http.Server{
@@ -26,14 +24,8 @@ func NewServer(address string, WRtimeout, idleTimeout int) *Server {
 			WriteTimeout: time.Second * time.Duration(WRtimeout),
 			ReadTimeout:  time.Second * time.Duration(WRtimeout),
 			IdleTimeout:  time.Second * time.Duration(idleTimeout),
-			Handler:      r,
 		},
 	}
-}
-
-func defineRoutes(r *mux.Router) {
-	r.HandleFunc("/api/health", HealthCheckHandler).Methods("GET")
-	//r.HandleFunc("/api/user", AddUserHandler).Methods("POST")
 }
 
 func (s *Server) Start() {

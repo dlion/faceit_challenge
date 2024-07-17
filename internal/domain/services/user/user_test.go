@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dlion/faceit_challenge/internal"
 	"github.com/dlion/faceit_challenge/internal/repositories"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -129,7 +130,7 @@ func TestUserService(t *testing.T) {
 
 		userService := NewUserService(mockedRepository)
 		country := "UK"
-		users, err := userService.GetUsers(context.TODO(), Query{Country: &country})
+		users, err := userService.GetUsers(context.TODO(), internal.UserFilter{Country: &country})
 
 		mockedRepository.AssertExpectations(t)
 		assert.NoError(t, err)
@@ -158,7 +159,7 @@ func (m *MockUserRepository) RemoveUser(ctx context.Context, id string) error {
 	return nil
 }
 
-func (m *MockUserRepository) GetUsers(ctx context.Context, filter repositories.Filter, limit *int64, offset *int64) []*repositories.User {
+func (m *MockUserRepository) GetUsers(ctx context.Context, filter internal.UserFilter, limit *int64, offset *int64) []*repositories.User {
 	args := m.Called()
 	return args.Get(0).([]*repositories.User)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/dlion/faceit_challenge/internal"
 	"github.com/dlion/faceit_challenge/internal/repositories"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -75,16 +76,10 @@ func (u *UserServiceImpl) RemoveUser(ctx context.Context, id string) error {
 	return nil
 }
 
-func (u *UserServiceImpl) GetUsers(ctx context.Context, query Query) ([]*User, error) {
-	log.Printf("Getting users with query: %+v", query)
+func (u *UserServiceImpl) GetUsers(ctx context.Context, userFilter internal.UserFilter) ([]*User, error) {
+	log.Printf("Getting users with query: %+v", userFilter)
 
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	err := validate.Struct(query)
-	if err != nil {
-		return nil, err
-	}
-
-	users := u.repository.GetUsers(ctx, NewUserFilterFromQuery(query), query.Limit, query.Offset)
+	users := u.repository.GetUsers(ctx, userFilter, userFilter.Limit, userFilter.Offset)
 
 	respUsers := make([]*User, len(users))
 	for i, u := range users {
@@ -106,8 +101,8 @@ func toUser(user *repositories.User) *User {
 	}
 }
 
-func NewUserFilterFromQuery(query Query) *repositories.UserFilter {
-	fbuilder := repositories.NewFilterBuilder()
+func NewUserFilterFromQuery(query Query) *internal.UserFilter {
+	fbuilder := internal.NewFilterBuilder()
 
 	if query.FirstName != nil {
 		fbuilder = fbuilder.ByFirstName(query.FirstName)

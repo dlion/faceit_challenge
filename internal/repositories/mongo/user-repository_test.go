@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dlion/faceit_challenge/internal"
 	"github.com/dlion/faceit_challenge/internal/repositories"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go/modules/mongodb"
@@ -375,7 +376,7 @@ func TestRepository(t *testing.T) {
 
 			userRepo := NewUserRepositoryMongoImpl(mongoClient)
 			country := "UK"
-			userFilter := repositories.NewFilterBuilder().ByCountry(&country).Build()
+			userFilter := internal.NewFilterBuilder().ByCountry(&country).Build()
 			users, err := userRepo.GetUsers(ctx, userFilter, int64Ptr(10), int64Ptr(0))
 			assert.NoError(t, err)
 
@@ -495,7 +496,7 @@ func TestRepository(t *testing.T) {
 
 			userRepo := NewUserRepositoryMongoImpl(mongoClient)
 			country := "UK"
-			userFilter := repositories.NewFilterBuilder().ByCountry(&country).Build()
+			userFilter := internal.NewFilterBuilder().ByCountry(&country).Build()
 			users, err := userRepo.GetUsers(ctx, userFilter, int64Ptr(2), int64Ptr(1))
 			assert.NoError(t, err)
 

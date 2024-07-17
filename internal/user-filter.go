@@ -1,4 +1,4 @@
-package repositories
+package internal
 
 import (
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,6 +14,8 @@ type UserFilter struct {
 	Nickname  *string
 	Country   *string
 	Email     *string
+	Offset    *int64
+	Limit     *int64
 }
 
 func (u *UserFilter) ToBSON() bson.M {

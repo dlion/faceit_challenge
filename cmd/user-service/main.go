@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/dlion/faceit_challenge/internal/api/http"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const (
@@ -18,6 +20,26 @@ const (
 
 func main() {
 	httpServer := http.NewServer(":80", WR_TIMEOUT, IDLE_TIMEOUT)
+	httpServer.Router.HandleFunc("/api/health", http.HealthCheckHandler).Methods("GET")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	clientOptions := options.Client().ApplyURI("mongodburi")
+	mongoClient, err := mongo.Connect(ctx, clientOptions)
+	if err != nil {
+		log.Fatalf("Failed to connect to MongoDB: %v", err)
+	}
+
+	err = mongoClient.Ping(ctx, nil)
+	if err != nil {
+		log.Fatalf("Failed to ping MongoDB: %v", err)
+	}
+
+	//userRepo := repositories.NewUserRepositoryMongoImpl(mongoClient)
+	//userService := user.NewUserService(userRepo)
+	//userHandler := &http.UserHandler{: userService}
+
 	httpServer.Start()
 
 	c := make(chan os.Signal, 1)
@@ -26,10 +48,7 @@ func main() {
 	sig := <-c
 	log.Printf("Received signal: %s. Initiating graceful shutdown...", sig)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
-
-	err := httpServer.Shutdown(ctx)
+	err = httpServer.Shutdown(ctx)
 	if err != nil {
 		log.Fatalf("Failed to shutdown the HTTP server: %s", err.Error())
 	}
