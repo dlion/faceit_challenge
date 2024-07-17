@@ -56,7 +56,7 @@ func (u *UserRepositoryMongoImpl) AddUser(ctx context.Context, user *repositorie
 		log.Fatalf("Failed to convert the insertedID to an ObjectID")
 	}
 
-	user.Id = insertedObjectID.Hex()
+	user.Id = insertedObjectID
 
 	return user, nil
 }
@@ -69,12 +69,7 @@ func (u *UserRepositoryMongoImpl) UpdateUser(ctx context.Context, user *reposito
 		return nil, err
 	}
 
-	userId, err := primitive.ObjectIDFromHex(user.Id)
-	if err != nil {
-		return nil, err
-	}
-
-	updatedResult, err := u.collection.UpdateByID(ctx, userId.String(), updatedUser)
+	updatedResult, err := u.collection.UpdateByID(ctx, user.Id, updatedUser)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +89,7 @@ func (u *UserRepositoryMongoImpl) RemoveUser(ctx context.Context, id string) err
 		return err
 	}
 
-	deletedResult, err := u.collection.DeleteOne(ctx, bson.M{"_id": objectId.String()})
+	deletedResult, err := u.collection.DeleteOne(ctx, bson.M{"_id": objectId})
 	if err != nil {
 		return err
 	}

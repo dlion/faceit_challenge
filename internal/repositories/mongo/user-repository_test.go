@@ -93,7 +93,7 @@ func TestRepository(t *testing.T) {
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
 				InsertOne(ctx, &repositories.User{
-					Id:        "randomID",
+					Id:        primitive.NewObjectIDFromTimestamp(time.Now()),
 					FirstName: "testName",
 					LastName:  "testLastName",
 					Nickname:  "testNickname",
@@ -145,7 +145,7 @@ func TestRepository(t *testing.T) {
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
 				InsertOne(ctx, &repositories.User{
-					Id:        objectID.String(),
+					Id:        objectID,
 					FirstName: "testName",
 					LastName:  "testLastName",
 					Nickname:  "testNickname",
@@ -159,7 +159,7 @@ func TestRepository(t *testing.T) {
 
 			userRepo := NewUserRepositoryMongoImpl(mongoClient)
 			_, err = userRepo.UpdateUser(ctx, &repositories.User{
-				Id:        objectID.Hex(),
+				Id:        objectID,
 				FirstName: "updatedFirstName",
 				LastName:  "testLastName",
 				Nickname:  "testNickname",
@@ -172,7 +172,7 @@ func TestRepository(t *testing.T) {
 			result := mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
-				FindOne(ctx, bson.M{"_id": objectID.String()})
+				FindOne(ctx, bson.M{"_id": objectID})
 			assert.NoError(t, result.Err())
 			userResult := &repositories.User{}
 			err = result.Decode(userResult)
@@ -204,10 +204,9 @@ func TestRepository(t *testing.T) {
 			err = mongoClient.Ping(ctx, nil)
 			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
 
-			objectRandom := primitive.NewObjectIDFromTimestamp(time.Now()).Hex()
 			userRepo := NewUserRepositoryMongoImpl(mongoClient)
 			_, err = userRepo.UpdateUser(ctx, &repositories.User{
-				Id:        objectRandom,
+				Id:        primitive.NewObjectIDFromTimestamp(time.Now()),
 				FirstName: "updatedFirstName",
 				LastName:  "testLastName",
 				Nickname:  "testNickname",
@@ -247,7 +246,7 @@ func TestRepository(t *testing.T) {
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
 				InsertOne(ctx, &repositories.User{
-					Id:        objectID.String(),
+					Id:        objectID,
 					FirstName: "testName",
 					LastName:  "testLastName",
 					Nickname:  "testNickname",
@@ -322,7 +321,7 @@ func TestRepository(t *testing.T) {
 			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
 
 			now := time.Now()
-			objectRandom := primitive.NewObjectIDFromTimestamp(now).String()
+			objectRandom := primitive.NewObjectIDFromTimestamp(now)
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
@@ -340,7 +339,7 @@ func TestRepository(t *testing.T) {
 			assert.NoError(t, err)
 
 			now1 := time.Now()
-			objectRandom1 := primitive.NewObjectIDFromTimestamp(now1).String()
+			objectRandom1 := primitive.NewObjectIDFromTimestamp(now1)
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
@@ -362,7 +361,7 @@ func TestRepository(t *testing.T) {
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
 				InsertOne(ctx, &repositories.User{
-					Id:        primitive.NewObjectIDFromTimestamp(now2).String(),
+					Id:        primitive.NewObjectIDFromTimestamp(now2),
 					FirstName: "testName",
 					LastName:  "testLastName",
 					Nickname:  "testNickname2",
@@ -405,7 +404,7 @@ func TestRepository(t *testing.T) {
 			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
 
 			now := time.Now()
-			objectRandom := primitive.NewObjectIDFromTimestamp(now).String()
+			objectRandom := primitive.NewObjectIDFromTimestamp(now)
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
@@ -423,7 +422,7 @@ func TestRepository(t *testing.T) {
 			assert.NoError(t, err)
 
 			now1 := time.Now()
-			objectRandom1 := primitive.NewObjectIDFromTimestamp(now1).String()
+			objectRandom1 := primitive.NewObjectIDFromTimestamp(now1)
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
@@ -441,7 +440,7 @@ func TestRepository(t *testing.T) {
 			assert.NoError(t, err)
 
 			now2 := time.Now()
-			objectRandom2 := primitive.NewObjectIDFromTimestamp(now2).String()
+			objectRandom2 := primitive.NewObjectIDFromTimestamp(now2)
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
@@ -459,7 +458,7 @@ func TestRepository(t *testing.T) {
 			assert.NoError(t, err)
 
 			now3 := time.Now()
-			objectRandom3 := primitive.NewObjectIDFromTimestamp(now3).String()
+			objectRandom3 := primitive.NewObjectIDFromTimestamp(now3)
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
@@ -477,7 +476,7 @@ func TestRepository(t *testing.T) {
 			assert.NoError(t, err)
 
 			now4 := time.Now()
-			objectRandom4 := primitive.NewObjectIDFromTimestamp(now4).String()
+			objectRandom4 := primitive.NewObjectIDFromTimestamp(now4)
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).

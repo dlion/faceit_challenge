@@ -6,6 +6,7 @@ import (
 
 	"github.com/dlion/faceit_challenge/internal/repositories"
 	"github.com/go-playground/validator/v10"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UserServiceImpl struct {
@@ -32,7 +33,7 @@ func (u *UserServiceImpl) NewUser(ctx context.Context, newUser NewUser) (*User, 
 	}
 
 	return &User{
-		Id:        addedUser.Id,
+		Id:        addedUser.Id.Hex(),
 		FirstName: addedUser.FirstName,
 		LastName:  addedUser.LastName,
 		Email:     addedUser.Email,
@@ -53,14 +54,20 @@ func (u *UserServiceImpl) UpdateUser(ctx context.Context, updateUser UpdateUser)
 	}
 
 	repoUser := repositories.NewRepoUser(updateUser.FirstName, updateUser.LastName, updateUser.Nickname, updateUser.Password, updateUser.Email, updateUser.Country)
-	repoUser.Id = updateUser.Id
+
+	hex, err := primitive.ObjectIDFromHex(updateUser.Id)
+	if err != nil {
+		return nil, err
+	}
+	repoUser.Id = hex
+
 	updatedUser, err := u.repository.UpdateUser(ctx, repoUser)
 	if err != nil {
 		return nil, err
 	}
 
 	return &User{
-		Id:        updatedUser.Id,
+		Id:        updatedUser.Id.Hex(),
 		FirstName: updatedUser.FirstName,
 		LastName:  updatedUser.LastName,
 		Email:     updatedUser.Email,
@@ -96,7 +103,7 @@ func (u *UserServiceImpl) GetUsers(ctx context.Context, query Query) ([]*User, e
 	respUsers := make([]*User, len(users))
 	for i, u := range users {
 		respUsers[i] = &User{
-			Id:        u.Id,
+			Id:        u.Id.Hex(),
 			FirstName: u.FirstName,
 			LastName:  u.LastName,
 			Email:     u.Email,
