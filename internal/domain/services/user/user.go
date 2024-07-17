@@ -9,6 +9,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type UserService interface {
+	NewUser(context.Context, NewUser) (*User, error)
+}
+
 type UserServiceImpl struct {
 	repository repositories.UserRepository
 }

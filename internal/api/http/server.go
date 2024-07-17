@@ -32,8 +32,8 @@ func NewServer(address string, WRtimeout, idleTimeout int) *Server {
 }
 
 func defineRoutes(r *mux.Router) {
-	r.HandleFunc("/api/health", HealthCheck).Methods("GET")
-	//TODO: Define others routes
+	r.HandleFunc("/api/health", HealthCheckHandler).Methods("GET")
+	//r.HandleFunc("/api/user", AddUserHandler).Methods("POST")
 }
 
 func (s *Server) Start() {
