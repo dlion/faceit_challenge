@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go/modules/mongodb"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
@@ -139,11 +140,13 @@ func TestRepository(t *testing.T) {
 			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
 
 			now := time.Now()
+			objectID := primitive.NewObjectIDFromTimestamp(now)
+
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
 				InsertOne(ctx, &repositories.User{
-					Id:        "randomID",
+					Id:        objectID.String(),
 					FirstName: "testName",
 					LastName:  "testLastName",
 					Nickname:  "testNickname",
@@ -157,7 +160,7 @@ func TestRepository(t *testing.T) {
 
 			userRepo := NewUserRepositoryMongoImpl(mongoClient)
 			err = userRepo.UpdateUser(ctx, &repositories.User{
-				Id:        "randomID",
+				Id:        objectID.Hex(),
 				FirstName: "updatedFirstName",
 				LastName:  "testLastName",
 				Nickname:  "testNickname",
@@ -170,7 +173,7 @@ func TestRepository(t *testing.T) {
 			result := mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
-				FindOne(ctx, bson.M{"_id": "randomID"})
+				FindOne(ctx, bson.M{"_id": objectID.String()})
 			assert.NoError(t, result.Err())
 			userResult := &repositories.User{}
 			err = result.Decode(userResult)
@@ -239,11 +242,12 @@ func TestRepository(t *testing.T) {
 			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
 
 			now := time.Now()
+			objectID := primitive.NewObjectIDFromTimestamp(now)
 			_, err = mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
 				InsertOne(ctx, &repositories.User{
-					Id:        "randomID",
+					Id:        objectID.String(),
 					FirstName: "testName",
 					LastName:  "testLastName",
 					Nickname:  "testNickname",
@@ -256,13 +260,13 @@ func TestRepository(t *testing.T) {
 			assert.NoError(t, err)
 
 			userRepo := NewUserRepositoryMongoImpl(mongoClient)
-			err = userRepo.RemoveUser(ctx, &repositories.User{Id: "randomID"})
+			err = userRepo.RemoveUser(ctx, &repositories.User{Id: objectID.Hex()})
 
 			assert.NoError(t, err)
 			result := mongoClient.
 				Database(DATABASE_NAME).
 				Collection(COLLECTION_NAME).
-				FindOne(ctx, bson.M{"_id": "randomID"})
+				FindOne(ctx, bson.M{"_id": objectID.String()})
 
 			userResult := &repositories.User{}
 			err = result.Decode(userResult)
