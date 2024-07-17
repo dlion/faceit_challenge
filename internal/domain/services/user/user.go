@@ -32,16 +32,7 @@ func (u *UserServiceImpl) NewUser(ctx context.Context, newUser NewUser) (*User, 
 		return nil, err
 	}
 
-	return &User{
-		Id:        addedUser.Id.Hex(),
-		FirstName: addedUser.FirstName,
-		LastName:  addedUser.LastName,
-		Email:     addedUser.Email,
-		Country:   addedUser.Country,
-		Nickname:  addedUser.Nickname,
-		CreatedAt: addedUser.CreatedAt.String(),
-		UpdatedAt: addedUser.CreatedAt.String(),
-	}, nil
+	return toUser(addedUser), nil
 }
 
 func (u *UserServiceImpl) UpdateUser(ctx context.Context, updateUser UpdateUser) (*User, error) {
@@ -66,16 +57,7 @@ func (u *UserServiceImpl) UpdateUser(ctx context.Context, updateUser UpdateUser)
 		return nil, err
 	}
 
-	return &User{
-		Id:        updatedUser.Id.Hex(),
-		FirstName: updatedUser.FirstName,
-		LastName:  updatedUser.LastName,
-		Email:     updatedUser.Email,
-		Country:   updatedUser.Country,
-		Nickname:  updatedUser.Nickname,
-		CreatedAt: updatedUser.CreatedAt.String(),
-		UpdatedAt: updatedUser.UpdatedAt.String(),
-	}, nil
+	return toUser(updatedUser), nil
 }
 
 func (u *UserServiceImpl) RemoveUser(ctx context.Context, id string) error {
@@ -102,19 +84,22 @@ func (u *UserServiceImpl) GetUsers(ctx context.Context, query Query) ([]*User, e
 
 	respUsers := make([]*User, len(users))
 	for i, u := range users {
-		respUsers[i] = &User{
-			Id:        u.Id.Hex(),
-			FirstName: u.FirstName,
-			LastName:  u.LastName,
-			Email:     u.Email,
-			Country:   u.Country,
-			Nickname:  u.Nickname,
-			CreatedAt: u.CreatedAt.String(),
-			UpdatedAt: u.CreatedAt.String(),
-		}
-
+		respUsers[i] = toUser(u)
 	}
 	return respUsers, nil
+}
+
+func toUser(user *repositories.User) *User {
+	return &User{
+		Id:        user.Id.Hex(),
+		CreatedAt: user.CreatedAt.String(),
+		UpdatedAt: user.UpdatedAt.String(),
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Nickname:  user.Nickname,
+		Email:     user.Email,
+		Country:   user.Country,
+	}
 }
 
 func NewUserFilterFromQuery(query Query) *repositories.UserFilter {
