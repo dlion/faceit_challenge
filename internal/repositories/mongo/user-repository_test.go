@@ -261,7 +261,7 @@ func TestRepository(t *testing.T) {
 			assert.NoError(t, err)
 
 			userRepo := NewUserRepositoryMongoImpl(mongoClient)
-			err = userRepo.RemoveUser(ctx, &repositories.User{Id: objectID.Hex()})
+			err = userRepo.RemoveUser(ctx, objectID.Hex())
 
 			assert.NoError(t, err)
 			result := mongoClient.
@@ -295,7 +295,7 @@ func TestRepository(t *testing.T) {
 			assert.NoError(t, err, "failed to ping MongoDB: %s", err)
 
 			userRepo := NewUserRepositoryMongoImpl(mongoClient)
-			err = userRepo.RemoveUser(ctx, &repositories.User{Id: "randomID"})
+			err = userRepo.RemoveUser(ctx, "randomId")
 
 			assert.Error(t, err)
 		})

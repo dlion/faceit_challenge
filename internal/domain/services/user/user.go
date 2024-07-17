@@ -70,3 +70,14 @@ func (u *UserServiceImpl) UpdateUser(ctx context.Context, updateUser UpdateUser)
 		UpdatedAt: updatedUser.UpdatedAt.String(),
 	}, nil
 }
+
+func (u *UserServiceImpl) RemoveUser(ctx context.Context, id string) error {
+	log.Printf("Removing user with id: %s", id)
+
+	err := u.repository.RemoveUser(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

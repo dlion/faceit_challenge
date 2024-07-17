@@ -81,6 +81,17 @@ func TestUserService(t *testing.T) {
 		assert.Equal(t, later.String(), updatedUser.UpdatedAt)
 	})
 
+	t.Run("Remove an existing user", func(t *testing.T) {
+		mockedRepository := new(MockUserRepository)
+		mockedRepository.On("RemoveUser").Return(nil)
+
+		userService := NewUserService(mockedRepository)
+		err := userService.RemoveUser(context.TODO(), "randomId")
+
+		mockedRepository.AssertExpectations(t)
+		assert.NoError(t, err)
+	})
+
 }
 
 type MockUserRepository struct {
@@ -95,4 +106,9 @@ func (m *MockUserRepository) AddUser(ctx context.Context, user *repositories.Use
 func (m *MockUserRepository) UpdateUser(ctx context.Context, user *repositories.User) (*repositories.User, error) {
 	args := m.Called()
 	return args.Get(0).(*repositories.User), nil
+}
+
+func (m *MockUserRepository) RemoveUser(ctx context.Context, id string) error {
+	m.Called()
+	return nil
 }

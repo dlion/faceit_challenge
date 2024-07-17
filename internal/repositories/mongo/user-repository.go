@@ -87,10 +87,10 @@ func (u *UserRepositoryMongoImpl) UpdateUser(ctx context.Context, user *reposito
 	return user, nil
 }
 
-func (u *UserRepositoryMongoImpl) RemoveUser(ctx context.Context, user *repositories.User) error {
-	log.Printf("Removing user (%s) from the database", user.Id)
+func (u *UserRepositoryMongoImpl) RemoveUser(ctx context.Context, id string) error {
+	log.Printf("Removing user (%s) from the database", id)
 
-	objectId, err := primitive.ObjectIDFromHex(user.Id)
+	objectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
 	}
