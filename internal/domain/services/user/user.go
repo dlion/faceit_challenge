@@ -110,19 +110,19 @@ func NewUserFilterFromQuery(query Query) *repositories.UserFilter {
 	}
 
 	if query.LastName != nil {
-		fbuilder = fbuilder.ByFirstName(query.LastName)
+		fbuilder = fbuilder.ByLastName(query.LastName)
 	}
 
 	if query.Nickname != nil {
-		fbuilder = fbuilder.ByFirstName(query.Nickname)
+		fbuilder = fbuilder.ByNickname(query.Nickname)
 	}
 
 	if query.Country != nil {
-		fbuilder = fbuilder.ByFirstName(query.Country)
+		fbuilder = fbuilder.ByCountry(query.Country)
 	}
 
 	if query.Email != nil {
-		fbuilder = fbuilder.ByFirstName(query.Email)
+		fbuilder = fbuilder.ByEmail(query.Email)
 	}
 
 	return fbuilder.Build()
