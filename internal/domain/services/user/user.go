@@ -53,6 +53,7 @@ func (u *UserServiceImpl) UpdateUser(ctx context.Context, updateUser UpdateUser)
 	}
 
 	repoUser := repositories.NewRepoUser(updateUser.FirstName, updateUser.LastName, updateUser.Nickname, updateUser.Password, updateUser.Email, updateUser.Country)
+	repoUser.Id = updateUser.Id
 	updatedUser, err := u.repository.UpdateUser(ctx, repoUser)
 	if err != nil {
 		return nil, err
