@@ -77,6 +77,16 @@ func (f *FilterBuilder) ByEmail(email *string) *FilterBuilder {
 	return f
 }
 
+func (f *FilterBuilder) WithLimit(limit *int64) *FilterBuilder {
+	f.filter.Limit = limit
+	return f
+}
+
+func (f *FilterBuilder) WithOffset(offset *int64) *FilterBuilder {
+	f.filter.Offset = offset
+	return f
+}
+
 func (f *FilterBuilder) Build() *UserFilter {
 	return f.filter
 }

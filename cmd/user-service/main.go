@@ -42,6 +42,7 @@ func main() {
 	userHandler := &http.UserHandler{UserService: userService}
 
 	httpServer.Router.HandleFunc("/api/health", http.HealthCheckHandler).Methods("GET")
+	httpServer.Router.HandleFunc("/api/users", userHandler.GetUsersHandler).Methods("GET")
 	httpServer.Router.HandleFunc("/api/user", userHandler.AddUserHandler).Methods("POST")
 	httpServer.Router.HandleFunc("/api/user/{id}", userHandler.UpdateUserHandler).Methods("PUT")
 	httpServer.Router.HandleFunc("/api/user/{id}", userHandler.RemoveUserHandler).Methods("DELETE")

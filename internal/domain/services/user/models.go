@@ -29,13 +29,3 @@ type User struct {
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 }
-
-type Query struct {
-	FirstName *string `json:"first_name,omitempty"`
-	LastName  *string `json:"last_name,omitempty"`
-	Nickname  *string `json:"nickname,omitempty"`
-	Country   *string `json:"country,omitempty"`
-	Email     *string `json:"email,omitempty"`
-	Limit     *int64  `json:"limit,omitempty"`
-	Offset    *int64  `json:"offset,omitempty"`
-}

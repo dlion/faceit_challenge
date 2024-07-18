@@ -15,6 +15,7 @@ type UserService interface {
 	NewUser(context.Context, NewUser) (*User, error)
 	UpdateUser(context.Context, UpdateUser) (*User, error)
 	RemoveUser(context.Context, string) error
+	GetUsers(context.Context, *internal.UserFilter) ([]*User, error)
 }
 
 type UserServiceImpl struct {
@@ -99,30 +100,4 @@ func toUser(user *repositories.User) *User {
 		CreatedAt: user.CreatedAt.Format(time.RFC3339),
 		UpdatedAt: user.UpdatedAt.Format(time.RFC3339),
 	}
-}
-
-func NewUserFilterFromQuery(query Query) *internal.UserFilter {
-	fbuilder := internal.NewFilterBuilder()
-
-	if query.FirstName != nil {
-		fbuilder = fbuilder.ByFirstName(query.FirstName)
-	}
-
-	if query.LastName != nil {
-		fbuilder = fbuilder.ByLastName(query.LastName)
-	}
-
-	if query.Nickname != nil {
-		fbuilder = fbuilder.ByNickname(query.Nickname)
-	}
-
-	if query.Country != nil {
-		fbuilder = fbuilder.ByCountry(query.Country)
-	}
-
-	if query.Email != nil {
-		fbuilder = fbuilder.ByEmail(query.Email)
-	}
-
-	return fbuilder.Build()
 }
