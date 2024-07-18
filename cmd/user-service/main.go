@@ -19,47 +19,33 @@ import (
 )
 
 const (
-	WR_TIMEOUT   = 15
-	IDLE_TIMEOUT = 60
+	WR_TIMEOUT      = 15
+	IDLE_TIMEOUT    = 60
+	MONGODB_ENV_VAR = "MONGODB_URI"
 )
 
 func main() {
-	httpServer := http.NewServer(":80", WR_TIMEOUT, IDLE_TIMEOUT)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	clientOptions := options.Client().ApplyURI("mongodb://mongo:mongo@mongodb:27017/faceit?authSource=admin")
-	mongoClient, err := mongo.Connect(ctx, clientOptions)
-	if err != nil {
-		log.Fatalf("Failed to connect to MongoDB: %v", err)
+	mongodbURI := os.Getenv(MONGODB_ENV_VAR)
+	if mongodbURI == "" {
+		log.Fatalf("%s environment variable is not set", MONGODB_ENV_VAR)
 	}
 
-	err = mongoClient.Ping(ctx, nil)
-	if err != nil {
-		log.Fatalf("Failed to ping MongoDB: %v", err)
-	}
-
+	mongoClient := createMongoClient(ctx, mongodbURI)
 	userRepo := repositories.NewUserRepositoryMongoImpl(mongoClient)
 	userChangeNotifier := notifier.NewNotifier()
 	userService := user.NewUserService(userRepo, &userChangeNotifier)
 
-	grpcServer := grpc.NewServer()
-	grpcUserHandler := grpc.NewUserGrpcHandler(userService)
-	proto.RegisterUserServiceServer(grpcServer, grpcUserHandler)
-
+	grpcServer := createGrpcServer(userService)
 	grpcServer.Start(":8080")
 
-	userHandler := &http.UserHandler{UserService: userService}
+	healthcheckHandler := http.NewHealthCheckHandler(mongoClient)
+	userHandler := http.NewUserHandler(userService)
 
-	httpServer.Router.HandleFunc("/api/health", http.HealthCheckHandler).Methods("GET")
-	httpServer.Router.HandleFunc("/api/users", userHandler.GetUsersHandler).Methods("GET")
-	httpServer.Router.HandleFunc("/api/user", userHandler.AddUserHandler).Methods("POST")
-	httpServer.Router.HandleFunc("/api/user/{id}", userHandler.UpdateUserHandler).Methods("PUT")
-	httpServer.Router.HandleFunc("/api/user/{id}", userHandler.RemoveUserHandler).Methods("DELETE")
-
-	httpServer.HttpServer.Handler = httpServer.Router
-
+	httpServer := defineHandlers(healthcheckHandler, userHandler)
 	httpServer.Start()
 
 	c := make(chan os.Signal, 1)
@@ -68,11 +54,44 @@ func main() {
 	sig := <-c
 	log.Printf("Received signal: %s. Initiating graceful shutdown...", sig)
 
+	shutdownServers(ctx, grpcServer, httpServer)
+
+	log.Println("Server gracefully stopped")
+}
+
+func shutdownServers(ctx context.Context, grpcServer *grpc.Server, httpServer *http.Server) {
 	grpcServer.Shutdown()
-	err = httpServer.Shutdown(ctx)
+	err := httpServer.Shutdown(ctx)
 	if err != nil {
 		log.Fatalf("Failed to shutdown the HTTP server: %s", err.Error())
 	}
+}
 
-	log.Println("Server gracefully stopped")
+func defineHandlers(healthcheck *http.HealthCheckHandler, user *http.UserHandler) *http.Server {
+	httpServer := http.NewServer(":80", WR_TIMEOUT, IDLE_TIMEOUT)
+
+	httpServer.Router.HandleFunc("/api/health", healthcheck.HealthCheckHandler).Methods("GET")
+	httpServer.Router.HandleFunc("/api/users", user.GetUsersHandler).Methods("GET")
+	httpServer.Router.HandleFunc("/api/user", user.AddUserHandler).Methods("POST")
+	httpServer.Router.HandleFunc("/api/user/{id}", user.UpdateUserHandler).Methods("PUT")
+	httpServer.Router.HandleFunc("/api/user/{id}", user.RemoveUserHandler).Methods("DELETE")
+	httpServer.HttpServer.Handler = httpServer.Router
+
+	return httpServer
+}
+
+func createGrpcServer(userService *user.UserServiceImpl) *grpc.Server {
+	grpcServer := grpc.NewServer()
+	grpcUserHandler := grpc.NewUserGrpcHandler(userService)
+	proto.RegisterUserServiceServer(grpcServer, grpcUserHandler)
+	return grpcServer
+}
+
+func createMongoClient(ctx context.Context, mongodbURI string) *mongo.Client {
+	clientOptions := options.Client().ApplyURI(mongodbURI)
+	mongoClient, err := mongo.Connect(ctx, clientOptions)
+	if err != nil {
+		log.Fatalf("Failed to connect to MongoDB: %v", err)
+	}
+	return mongoClient
 }

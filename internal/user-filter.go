@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"fmt"
+
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -16,6 +18,28 @@ type UserFilter struct {
 	Email     *string
 	Offset    *int64
 	Limit     *int64
+}
+
+func (uf *UserFilter) String() string {
+	return fmt.Sprintf(
+		"FirstName:%v, LastName:%v, Nickname:%v, Country:%v, Email:%v, Offset:%v, Limit:%v",
+		stringValue(uf.FirstName), stringValue(uf.LastName), stringValue(uf.Nickname),
+		stringValue(uf.Country), stringValue(uf.Email), int64Value(uf.Offset), int64Value(uf.Limit),
+	)
+}
+
+func stringValue(s *string) string {
+	if s == nil {
+		return "empty"
+	}
+	return *s
+}
+
+func int64Value(i *int64) string {
+	if i == nil {
+		return "empty"
+	}
+	return fmt.Sprintf("%d", *i)
 }
 
 func (u *UserFilter) ToBSON() bson.M {

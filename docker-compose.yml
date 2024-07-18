@@ -37,10 +37,7 @@ services:
       target: app
     restart: on-failure
     environment:
-      # MongoDB connection string
-      - USER_DATABASE_URI=mongodb://mongo:mongo@mongodb:27017/faceit?authSource=admin
-      # GRPC Server address
-      # - USER_SERVER=0.0.0.0:8080
+      - MONGODB_URI=mongodb://mongo:mongo@mongodb:27017/faceit?authSource=admin
     depends_on:
       mongo:
         condition: service_healthy

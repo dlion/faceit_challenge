@@ -1,4 +1,3 @@
-# Dockerfile
 FROM golang:1.22 as builder
 
 COPY go.mod .

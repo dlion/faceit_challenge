@@ -98,7 +98,7 @@ func (u *UserServiceImpl) RemoveUser(ctx context.Context, id string) error {
 }
 
 func (u *UserServiceImpl) GetUsers(ctx context.Context, userFilter *internal.UserFilter) ([]*User, error) {
-	log.Printf("Getting users with query: %+v", userFilter)
+	log.Printf("Getting users with query: %s", userFilter)
 
 	users, err := u.repository.GetUsers(ctx, userFilter, userFilter.Limit, userFilter.Offset)
 	if err != nil {
