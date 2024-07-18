@@ -44,6 +44,7 @@ func main() {
 	httpServer.Router.HandleFunc("/api/health", http.HealthCheckHandler).Methods("GET")
 	httpServer.Router.HandleFunc("/api/user", userHandler.AddUserHandler).Methods("POST")
 	httpServer.Router.HandleFunc("/api/user/{id}", userHandler.UpdateUserHandler).Methods("PUT")
+	httpServer.Router.HandleFunc("/api/user/{id}", userHandler.RemoveUserHandler).Methods("DELETE")
 
 	httpServer.HttpServer.Handler = httpServer.Router
 

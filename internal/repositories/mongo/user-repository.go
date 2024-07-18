@@ -65,12 +65,12 @@ func (u *UserRepositoryMongoImpl) AddUser(ctx context.Context, user *repositorie
 func (u *UserRepositoryMongoImpl) UpdateUser(ctx context.Context, user *repositories.User) (*repositories.User, error) {
 	log.Printf("Updating user (%s) in the database", user.Id.Hex())
 
-	updatedUser, err := createUpdatedUser(user)
+	updatedFields, err := createUpdatedUser(user)
 	if err != nil {
 		return nil, err
 	}
 
-	updatedResult, err := u.collection.UpdateByID(ctx, user.Id, updatedUser)
+	updatedResult, err := u.collection.UpdateOne(ctx, bson.M{"_id": user.Id}, updatedFields)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,17 @@ func (u *UserRepositoryMongoImpl) UpdateUser(ctx context.Context, user *reposito
 		return nil, ErrUserNotFound
 	}
 
-	return user, nil
+	updatedUser := u.collection.FindOne(ctx, bson.M{"_id": user.Id})
+	if updatedUser.Err() != nil {
+		return nil, updatedUser.Err()
+	}
+	updatedUserResult := &repositories.User{}
+	err = updatedUser.Decode(updatedUserResult)
+	if err != nil {
+		return nil, err
+	}
+
+	return updatedUserResult, nil
 }
 
 func (u *UserRepositoryMongoImpl) RemoveUser(ctx context.Context, id string) error {
@@ -167,11 +177,11 @@ func createUpdatedUser(user *repositories.User) (bson.M, error) {
 		updateFields["country"] = user.Country
 	}
 
-	updateFields["updated_at"] = time.Now()
-
 	if len(updateFields) == 0 {
 		return nil, ErrNothingToUpdate
 	}
+
+	updateFields["updated_at"] = time.Now()
 
 	return bson.M{"$set": updateFields}, nil
 }

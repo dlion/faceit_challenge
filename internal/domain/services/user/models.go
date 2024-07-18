@@ -11,12 +11,12 @@ type NewUser struct {
 
 type UpdateUser struct {
 	Id        string `json:"id"`
-	FirstName string `json:"first_name,omitempty"`
-	LastName  string `json:"last_name,omitempty"`
-	Nickname  string `json:"nickname,omitempty"`
-	Email     string `json:"email,omitempty" validate:"email"`
-	Password  string `json:"password,omitempty" validate:"min=8"`
-	Country   string `json:"country,omitempty"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Nickname  string `json:"nickname"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	Country   string `json:"country"`
 }
 
 type User struct {

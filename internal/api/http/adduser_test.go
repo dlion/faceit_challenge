@@ -79,3 +79,8 @@ func (m *MockUserService) UpdateUser(ctx context.Context, updateUser user.Update
 	args := m.Called()
 	return args.Get(0).(*user.User), nil
 }
+
+func (m *MockUserService) RemoveUser(ctx context.Context, id string) error {
+	m.Called()
+	return nil
+}

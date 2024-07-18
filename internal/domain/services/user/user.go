@@ -14,6 +14,7 @@ import (
 type UserService interface {
 	NewUser(context.Context, NewUser) (*User, error)
 	UpdateUser(context.Context, UpdateUser) (*User, error)
+	RemoveUser(context.Context, string) error
 }
 
 type UserServiceImpl struct {
@@ -44,12 +45,6 @@ func (u *UserServiceImpl) NewUser(ctx context.Context, newUser NewUser) (*User, 
 
 func (u *UserServiceImpl) UpdateUser(ctx context.Context, updateUser UpdateUser) (*User, error) {
 	log.Printf("Updating user %s", updateUser.Id)
-
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	err := validate.Struct(updateUser)
-	if err != nil {
-		return nil, err
-	}
 
 	repoUser := repositories.NewRepoUser(updateUser.FirstName, updateUser.LastName, updateUser.Nickname, updateUser.Password, updateUser.Email, updateUser.Country)
 
@@ -96,13 +91,13 @@ func (u *UserServiceImpl) GetUsers(ctx context.Context, userFilter *internal.Use
 func toUser(user *repositories.User) *User {
 	return &User{
 		Id:        user.Id.Hex(),
-		CreatedAt: user.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: user.UpdatedAt.Format(time.RFC3339),
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
 		Nickname:  user.Nickname,
 		Email:     user.Email,
 		Country:   user.Country,
+		CreatedAt: user.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: user.UpdatedAt.Format(time.RFC3339),
 	}
 }
 
