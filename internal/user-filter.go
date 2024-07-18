@@ -28,20 +28,6 @@ func (uf *UserFilter) String() string {
 	)
 }
 
-func stringValue(s *string) string {
-	if s == nil {
-		return "empty"
-	}
-	return *s
-}
-
-func int64Value(i *int64) string {
-	if i == nil {
-		return "empty"
-	}
-	return fmt.Sprintf("%d", *i)
-}
-
 func (u *UserFilter) ToBSON() bson.M {
 	query := bson.M{}
 
@@ -66,6 +52,20 @@ func (u *UserFilter) ToBSON() bson.M {
 	}
 
 	return query
+}
+
+func stringValue(s *string) string {
+	if s == nil {
+		return "empty"
+	}
+	return *s
+}
+
+func int64Value(i *int64) string {
+	if i == nil {
+		return "empty"
+	}
+	return fmt.Sprintf("%d", *i)
 }
 
 type FilterBuilder struct {
