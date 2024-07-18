@@ -15,8 +15,8 @@ import (
 
 func TestUserService(t *testing.T) {
 	t.Run("Add a new user and return it", func(t *testing.T) {
-		mockedRepository := new(MockUserRepository)
-		mockedNotifier := new(MockUserNotifier)
+		mockedRepository := new(mockUserRepository)
+		mockedNotifier := new(mockUserNotifier)
 		now := time.Now()
 		objectId := primitive.NewObjectIDFromTimestamp(now)
 		mockedRepository.On("AddUser").Return(&repositories.User{
@@ -52,8 +52,8 @@ func TestUserService(t *testing.T) {
 	})
 
 	t.Run("Modify and existing user and return it", func(t *testing.T) {
-		mockedRepository := new(MockUserRepository)
-		mockedNotifier := new(MockUserNotifier)
+		mockedRepository := new(mockUserRepository)
+		mockedNotifier := new(mockUserNotifier)
 		now := time.Now()
 		objectId := primitive.NewObjectIDFromTimestamp(now)
 		later := now.Add(time.Duration(20 * time.Second))
@@ -92,8 +92,8 @@ func TestUserService(t *testing.T) {
 	})
 
 	t.Run("Remove an existing user", func(t *testing.T) {
-		mockedRepository := new(MockUserRepository)
-		mockedNotifier := new(MockUserNotifier)
+		mockedRepository := new(mockUserRepository)
+		mockedNotifier := new(mockUserNotifier)
 		mockedRepository.On("RemoveUser").Return(nil)
 		mockedNotifier.On("Broadcast")
 
@@ -105,8 +105,8 @@ func TestUserService(t *testing.T) {
 	})
 
 	t.Run("Get paginated list of users filtered by Conuntry", func(t *testing.T) {
-		mockedRepository := new(MockUserRepository)
-		mockedNotifier := new(MockUserNotifier)
+		mockedRepository := new(mockUserRepository)
+		mockedNotifier := new(mockUserNotifier)
 		now := time.Now()
 		objectId := primitive.NewObjectIDFromTimestamp(now)
 		var dbUsers []*repositories.User
@@ -148,47 +148,47 @@ func TestUserService(t *testing.T) {
 
 }
 
-type MockUserRepository struct {
+type mockUserRepository struct {
 	mock.Mock
 }
 
-func (m *MockUserRepository) AddUser(ctx context.Context, user *repositories.User) (*repositories.User, error) {
+func (m *mockUserRepository) AddUser(ctx context.Context, user *repositories.User) (*repositories.User, error) {
 	args := m.Called()
 	return args.Get(0).(*repositories.User), nil
 }
 
-func (m *MockUserRepository) UpdateUser(ctx context.Context, user *repositories.User) (*repositories.User, error) {
+func (m *mockUserRepository) UpdateUser(ctx context.Context, user *repositories.User) (*repositories.User, error) {
 	args := m.Called()
 	return args.Get(0).(*repositories.User), nil
 }
 
-func (m *MockUserRepository) RemoveUser(ctx context.Context, id string) error {
+func (m *mockUserRepository) RemoveUser(ctx context.Context, id string) error {
 	m.Called()
 	return nil
 }
 
-func (m *MockUserRepository) GetUsers(ctx context.Context, filter *filter.UserFilter, limit *int64, offset *int64) ([]*repositories.User, error) {
+func (m *mockUserRepository) GetUsers(ctx context.Context, filter *filter.UserFilter, limit *int64, offset *int64) ([]*repositories.User, error) {
 	args := m.Called()
 	return args.Get(0).([]*repositories.User), nil
 }
 
-type MockUserNotifier struct {
+type mockUserNotifier struct {
 	mock.Mock
 }
 
-func (m *MockUserNotifier) AddSubscriber(id string) <-chan notifier.ChangeData {
+func (m *mockUserNotifier) AddSubscriber(id string) <-chan notifier.ChangeData {
 	m.Called()
 	return nil
 }
 
-func (m *MockUserNotifier) RemoveSubscriber(id string) {
+func (m *mockUserNotifier) RemoveSubscriber(id string) {
 	m.Called()
 }
 
-func (m *MockUserNotifier) Broadcast(msg notifier.ChangeData) {
+func (m *mockUserNotifier) Broadcast(msg notifier.ChangeData) {
 	m.Called()
 }
 
-func (m *MockUserNotifier) Close() {
+func (m *mockUserNotifier) Close() {
 	m.Called()
 }
