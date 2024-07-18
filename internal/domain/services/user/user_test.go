@@ -7,6 +7,7 @@ import (
 
 	"github.com/dlion/faceit_challenge/internal"
 	"github.com/dlion/faceit_challenge/internal/repositories"
+	"github.com/dlion/faceit_challenge/pkg/notifier"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -15,6 +16,7 @@ import (
 func TestUserService(t *testing.T) {
 	t.Run("Add a new user and return it", func(t *testing.T) {
 		mockedRepository := new(MockUserRepository)
+		mockedNotifier := new(MockUserNotifier)
 		now := time.Now()
 		objectId := primitive.NewObjectIDFromTimestamp(now)
 		mockedRepository.On("AddUser").Return(&repositories.User{
@@ -28,8 +30,9 @@ func TestUserService(t *testing.T) {
 			CreatedAt: now,
 			UpdatedAt: now,
 		}, nil)
+		mockedNotifier.On("Broadcast")
 
-		userService := NewUserService(mockedRepository)
+		userService := NewUserService(mockedRepository, mockedNotifier)
 		addedUser, err := userService.NewUser(context.TODO(), NewUser{
 			FirstName: "TestFirstName",
 			LastName:  "TestLastName",
@@ -50,6 +53,7 @@ func TestUserService(t *testing.T) {
 
 	t.Run("Modify and existing user and return it", func(t *testing.T) {
 		mockedRepository := new(MockUserRepository)
+		mockedNotifier := new(MockUserNotifier)
 		now := time.Now()
 		objectId := primitive.NewObjectIDFromTimestamp(now)
 		later := now.Add(time.Duration(20 * time.Second))
@@ -64,8 +68,9 @@ func TestUserService(t *testing.T) {
 			CreatedAt: now,
 			UpdatedAt: later,
 		}, nil)
+		mockedNotifier.On("Broadcast")
 
-		userService := NewUserService(mockedRepository)
+		userService := NewUserService(mockedRepository, mockedNotifier)
 		updatedUser, err := userService.UpdateUser(context.TODO(), UpdateUser{
 			Id:        objectId.Hex(),
 			FirstName: "TestFirstName",
@@ -88,9 +93,11 @@ func TestUserService(t *testing.T) {
 
 	t.Run("Remove an existing user", func(t *testing.T) {
 		mockedRepository := new(MockUserRepository)
+		mockedNotifier := new(MockUserNotifier)
 		mockedRepository.On("RemoveUser").Return(nil)
+		mockedNotifier.On("Broadcast")
 
-		userService := NewUserService(mockedRepository)
+		userService := NewUserService(mockedRepository, mockedNotifier)
 		err := userService.RemoveUser(context.TODO(), "randomId")
 
 		mockedRepository.AssertExpectations(t)
@@ -99,6 +106,7 @@ func TestUserService(t *testing.T) {
 
 	t.Run("Get paginated list of users filtered by Conuntry", func(t *testing.T) {
 		mockedRepository := new(MockUserRepository)
+		mockedNotifier := new(MockUserNotifier)
 		now := time.Now()
 		objectId := primitive.NewObjectIDFromTimestamp(now)
 		var dbUsers []*repositories.User
@@ -128,7 +136,7 @@ func TestUserService(t *testing.T) {
 		})
 		mockedRepository.On("GetUsers").Return(dbUsers, nil)
 
-		userService := NewUserService(mockedRepository)
+		userService := NewUserService(mockedRepository, mockedNotifier)
 		country := "UK"
 		users, err := userService.GetUsers(context.TODO(), &internal.UserFilter{Country: &country})
 
@@ -162,4 +170,25 @@ func (m *MockUserRepository) RemoveUser(ctx context.Context, id string) error {
 func (m *MockUserRepository) GetUsers(ctx context.Context, filter *internal.UserFilter, limit *int64, offset *int64) ([]*repositories.User, error) {
 	args := m.Called()
 	return args.Get(0).([]*repositories.User), nil
+}
+
+type MockUserNotifier struct {
+	mock.Mock
+}
+
+func (m *MockUserNotifier) AddSubscriber(id string) <-chan notifier.ChangeData {
+	m.Called()
+	return nil
+}
+
+func (m *MockUserNotifier) RemoveSubscriber(id string) {
+	m.Called()
+}
+
+func (m *MockUserNotifier) Broadcast(msg notifier.ChangeData) {
+	m.Called()
+}
+
+func (m *MockUserNotifier) Close() {
+	m.Called()
 }

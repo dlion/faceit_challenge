@@ -7,6 +7,7 @@ import (
 
 	"github.com/dlion/faceit_challenge/internal"
 	"github.com/dlion/faceit_challenge/internal/repositories"
+	"github.com/dlion/faceit_challenge/pkg/notifier"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -16,14 +17,17 @@ type UserService interface {
 	UpdateUser(context.Context, UpdateUser) (*User, error)
 	RemoveUser(context.Context, string) error
 	GetUsers(context.Context, *internal.UserFilter) ([]*User, error)
+	GetChangeChannel(clientId string) <-chan notifier.ChangeData
+	RemoveChannel(clientId string) error
 }
 
 type UserServiceImpl struct {
 	repository repositories.UserRepository
+	notifier   notifier.Notifier
 }
 
-func NewUserService(repository repositories.UserRepository) *UserServiceImpl {
-	return &UserServiceImpl{repository: repository}
+func NewUserService(repository repositories.UserRepository, notifier notifier.Notifier) *UserServiceImpl {
+	return &UserServiceImpl{repository: repository, notifier: notifier}
 }
 
 func (u *UserServiceImpl) NewUser(ctx context.Context, newUser NewUser) (*User, error) {
@@ -41,7 +45,14 @@ func (u *UserServiceImpl) NewUser(ctx context.Context, newUser NewUser) (*User, 
 		return nil, err
 	}
 
-	return toUser(addedUser), nil
+	outputUser := toUser(addedUser)
+
+	u.notifier.Broadcast(notifier.ChangeData{
+		OperationType: notifier.ChangeOperationInsert,
+		UserId:        outputUser.Id,
+	})
+
+	return outputUser, nil
 }
 
 func (u *UserServiceImpl) UpdateUser(ctx context.Context, updateUser UpdateUser) (*User, error) {
@@ -60,7 +71,14 @@ func (u *UserServiceImpl) UpdateUser(ctx context.Context, updateUser UpdateUser)
 		return nil, err
 	}
 
-	return toUser(updatedUser), nil
+	outputUser := toUser(updatedUser)
+
+	u.notifier.Broadcast(notifier.ChangeData{
+		OperationType: notifier.ChangeOperationUpdate,
+		UserId:        outputUser.Id,
+	})
+
+	return outputUser, nil
 }
 
 func (u *UserServiceImpl) RemoveUser(ctx context.Context, id string) error {
@@ -70,6 +88,11 @@ func (u *UserServiceImpl) RemoveUser(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
+
+	u.notifier.Broadcast(notifier.ChangeData{
+		OperationType: notifier.ChangeOperationDelete,
+		UserId:        id,
+	})
 
 	return nil
 }
@@ -87,6 +110,15 @@ func (u *UserServiceImpl) GetUsers(ctx context.Context, userFilter *internal.Use
 		respUsers[i] = toUser(u)
 	}
 	return respUsers, nil
+}
+
+func (u *UserServiceImpl) GetChangeChannel(clientId string) <-chan notifier.ChangeData {
+	return u.notifier.AddSubscriber(clientId)
+}
+
+func (u *UserServiceImpl) RemoveChannel(clientId string) error {
+	u.notifier.RemoveSubscriber(clientId)
+	return nil
 }
 
 func toUser(user *repositories.User) *User {

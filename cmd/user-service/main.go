@@ -12,6 +12,7 @@ import (
 	"github.com/dlion/faceit_challenge/internal/api/http"
 	"github.com/dlion/faceit_challenge/internal/domain/services/user"
 	repositories "github.com/dlion/faceit_challenge/internal/repositories/mongo"
+	"github.com/dlion/faceit_challenge/pkg/notifier"
 	"github.com/dlion/faceit_challenge/pkg/proto/proto"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -40,7 +41,8 @@ func main() {
 	}
 
 	userRepo := repositories.NewUserRepositoryMongoImpl(mongoClient)
-	userService := user.NewUserService(userRepo)
+	userChangeNotifier := notifier.NewNotifier()
+	userService := user.NewUserService(userRepo, &userChangeNotifier)
 
 	grpcServer := grpc.NewServer()
 	grpcUserHandler := grpc.NewUserGrpcHandler(userService)
