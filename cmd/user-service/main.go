@@ -8,9 +8,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/dlion/faceit_challenge/internal/api/grpc"
 	"github.com/dlion/faceit_challenge/internal/api/http"
 	"github.com/dlion/faceit_challenge/internal/domain/services/user"
 	repositories "github.com/dlion/faceit_challenge/internal/repositories/mongo"
+	"github.com/dlion/faceit_challenge/pkg/proto/proto"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -39,6 +41,13 @@ func main() {
 
 	userRepo := repositories.NewUserRepositoryMongoImpl(mongoClient)
 	userService := user.NewUserService(userRepo)
+
+	grpcServer := grpc.NewServer()
+	grpcUserHandler := grpc.NewUserGrpcHandler(userService)
+	proto.RegisterUserServiceServer(grpcServer, grpcUserHandler)
+
+	grpcServer.Start(":8080")
+
 	userHandler := &http.UserHandler{UserService: userService}
 
 	httpServer.Router.HandleFunc("/api/health", http.HealthCheckHandler).Methods("GET")
@@ -57,6 +66,7 @@ func main() {
 	sig := <-c
 	log.Printf("Received signal: %s. Initiating graceful shutdown...", sig)
 
+	grpcServer.Shutdown()
 	err = httpServer.Shutdown(ctx)
 	if err != nil {
 		log.Fatalf("Failed to shutdown the HTTP server: %s", err.Error())
