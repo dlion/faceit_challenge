@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 
-	"github.com/dlion/faceit_challenge/internal"
+	filter "github.com/dlion/faceit_challenge/internal"
 	"github.com/dlion/faceit_challenge/pkg/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -27,42 +27,42 @@ func (s *UserGrpcHandler) GetUsers(ctx context.Context, request *proto.GetUsersR
 	return &proto.GetUsersResponse{Users: userOutput}, nil
 }
 
-func toUserFilter(filter *proto.UserFilter) *internal.UserFilter {
-	fbuilder := internal.NewFilterBuilder()
+func toUserFilter(userFilter *proto.UserFilter) *filter.UserFilter {
+	fbuilder := filter.NewFilterBuilder()
 
-	firstName := filter.FirstName
+	firstName := userFilter.FirstName
 	if firstName != "" {
 		fbuilder.ByFirstName(&firstName)
 	}
 
-	lastName := filter.LastName
+	lastName := userFilter.LastName
 	if lastName != "" {
 		fbuilder = fbuilder.ByLastName(&lastName)
 	}
 
-	nickname := filter.Nickname
+	nickname := userFilter.Nickname
 	if nickname != "" {
 		fbuilder = fbuilder.ByNickname(&nickname)
 	}
 
-	country := filter.Country
+	country := userFilter.Country
 	if country != "" {
 		fbuilder = fbuilder.ByCountry(&country)
 	}
 
-	email := filter.Email
+	email := userFilter.Email
 	if email != "" {
 		fbuilder = fbuilder.ByEmail(&email)
 	}
 
-	limit := filter.Limit
+	limit := userFilter.Limit
 	if limit > 0 {
 		fbuilder.WithLimit(&limit)
 	} else {
 		fbuilder.WithLimit(intToint64(10))
 	}
 
-	offset := filter.Offset
+	offset := userFilter.Offset
 	if offset >= 0 {
 		fbuilder.WithOffset(&offset)
 	} else {

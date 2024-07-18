@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/dlion/faceit_challenge/internal"
+	filter "github.com/dlion/faceit_challenge/internal"
 	"github.com/dlion/faceit_challenge/internal/repositories"
 	"github.com/dlion/faceit_challenge/pkg/notifier"
 	"github.com/go-playground/validator/v10"
@@ -16,7 +16,7 @@ type UserService interface {
 	NewUser(context.Context, NewUser) (*User, error)
 	UpdateUser(context.Context, UpdateUser) (*User, error)
 	RemoveUser(context.Context, string) error
-	GetUsers(context.Context, *internal.UserFilter) ([]*User, error)
+	GetUsers(context.Context, *filter.UserFilter) ([]*User, error)
 	GetChangeChannel(clientId string) <-chan notifier.ChangeData
 	RemoveChannel(clientId string) error
 }
@@ -97,7 +97,7 @@ func (u *UserServiceImpl) RemoveUser(ctx context.Context, id string) error {
 	return nil
 }
 
-func (u *UserServiceImpl) GetUsers(ctx context.Context, userFilter *internal.UserFilter) ([]*User, error) {
+func (u *UserServiceImpl) GetUsers(ctx context.Context, userFilter *filter.UserFilter) ([]*User, error) {
 	log.Printf("Getting users with query: %s", userFilter)
 
 	users, err := u.repository.GetUsers(ctx, userFilter, userFilter.Limit, userFilter.Offset)

@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 
-	"github.com/dlion/faceit_challenge/internal"
+	filter "github.com/dlion/faceit_challenge/internal"
 	"github.com/dlion/faceit_challenge/internal/domain/services/user"
 	"github.com/dlion/faceit_challenge/pkg/notifier"
 	"github.com/stretchr/testify/mock"
@@ -28,7 +28,7 @@ func (m *MockUserService) RemoveUser(ctx context.Context, id string) error {
 	return nil
 }
 
-func (m *MockUserService) GetUsers(ctx context.Context, filter *internal.UserFilter) ([]*user.User, error) {
+func (m *MockUserService) GetUsers(ctx context.Context, filter *filter.UserFilter) ([]*user.User, error) {
 	args := m.Called()
 	return args.Get(0).([]*user.User), nil
 }

@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/dlion/faceit_challenge/internal"
+	filter "github.com/dlion/faceit_challenge/internal"
 )
 
 func (u *UserHandler) GetUsersHandler(w http.ResponseWriter, req *http.Request) {
@@ -30,8 +30,8 @@ func (u *UserHandler) GetUsersHandler(w http.ResponseWriter, req *http.Request) 
 	}
 }
 
-func NewUserFilterFromQuery(query url.Values) *internal.UserFilter {
-	fbuilder := internal.NewFilterBuilder()
+func NewUserFilterFromQuery(query url.Values) *filter.UserFilter {
+	fbuilder := filter.NewFilterBuilder()
 
 	firstName := query.Get("first_name")
 	if firstName != "" {

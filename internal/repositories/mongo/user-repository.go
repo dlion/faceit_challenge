@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/dlion/faceit_challenge/internal"
+	filter "github.com/dlion/faceit_challenge/internal"
 	"github.com/dlion/faceit_challenge/internal/repositories"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -112,7 +112,7 @@ func (u *UserRepositoryMongoImpl) RemoveUser(ctx context.Context, id string) err
 	return nil
 }
 
-func (u *UserRepositoryMongoImpl) GetUsers(ctx context.Context, userFilter *internal.UserFilter, limit, offset *int64) ([]*repositories.User, error) {
+func (u *UserRepositoryMongoImpl) GetUsers(ctx context.Context, userFilter *filter.UserFilter, limit, offset *int64) ([]*repositories.User, error) {
 
 	log.Printf("Getting users from the database with filters: %+v", userFilter.ToBSON())
 
