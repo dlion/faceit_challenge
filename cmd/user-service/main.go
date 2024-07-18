@@ -10,10 +10,11 @@ import (
 
 	"github.com/dlion/faceit_challenge/internal/api/grpc"
 	"github.com/dlion/faceit_challenge/internal/api/http"
+	"github.com/dlion/faceit_challenge/internal/api/http/handlers"
 	"github.com/dlion/faceit_challenge/internal/domain/services/user"
 	repositories "github.com/dlion/faceit_challenge/internal/repositories/mongo"
 	"github.com/dlion/faceit_challenge/pkg/notifier"
-	"github.com/dlion/faceit_challenge/pkg/proto/proto"
+	"github.com/dlion/faceit_challenge/pkg/proto"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -25,7 +26,6 @@ const (
 )
 
 func main() {
-
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
@@ -42,8 +42,8 @@ func main() {
 	grpcServer := createGrpcServer(userService)
 	grpcServer.Start(":8080")
 
-	healthcheckHandler := http.NewHealthCheckHandler(mongoClient)
-	userHandler := http.NewUserHandler(userService)
+	healthcheckHandler := handlers.NewHealthCheckHandler(mongoClient)
+	userHandler := handlers.NewUserHandler(userService)
 
 	httpServer := defineHandlers(healthcheckHandler, userHandler)
 	httpServer.Start()
@@ -67,7 +67,7 @@ func shutdownServers(ctx context.Context, grpcServer *grpc.Server, httpServer *h
 	}
 }
 
-func defineHandlers(healthcheck *http.HealthCheckHandler, user *http.UserHandler) *http.Server {
+func defineHandlers(healthcheck *handlers.HealthCheckHandler, user *handlers.UserHandler) *http.Server {
 	httpServer := http.NewServer(":80", WR_TIMEOUT, IDLE_TIMEOUT)
 
 	httpServer.Router.HandleFunc("/api/health", healthcheck.HealthCheckHandler).Methods("GET")

@@ -1,4 +1,4 @@
-package http
+package handlers
 
 import "github.com/dlion/faceit_challenge/internal/domain/services/user"
 

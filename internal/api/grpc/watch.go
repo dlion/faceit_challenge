@@ -5,7 +5,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/dlion/faceit_challenge/pkg/proto/proto"
+	"github.com/dlion/faceit_challenge/pkg/proto"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 )

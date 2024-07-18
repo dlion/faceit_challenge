@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/dlion/faceit_challenge/internal"
-	"github.com/dlion/faceit_challenge/pkg/proto/proto"
+	"github.com/dlion/faceit_challenge/pkg/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
