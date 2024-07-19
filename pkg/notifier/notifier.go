@@ -48,14 +48,16 @@ func (n *NotifierImpl) RemoveSubscriber(id string) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 
-	_, exists := n.receiverChannels[id]
+	ch, exists := n.receiverChannels[id]
 	if !exists {
 		return
 	}
 
-	log.Print("Removing a subscriber, ", id)
-
-	close(n.receiverChannels[id])
+	select {
+	case <-ch:
+	default:
+		close(ch)
+	}
 
 	delete(n.receiverChannels, id)
 }
@@ -66,11 +68,13 @@ func (n *NotifierImpl) Broadcast(msg ChangeData) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 
-	go func() {
-		for _, ch := range n.receiverChannels {
-			ch <- msg
+	for _, ch := range n.receiverChannels {
+		select {
+		case ch <- msg:
+		default:
+			log.Print("Dropping message for subscriber")
 		}
-	}()
+	}
 }
 
 func (n *NotifierImpl) Close() {
@@ -79,7 +83,12 @@ func (n *NotifierImpl) Close() {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 
-	for _, ch := range n.receiverChannels {
-		close(ch)
+	for id, ch := range n.receiverChannels {
+		select {
+		case <-ch:
+		default:
+			close(ch)
+		}
+		delete(n.receiverChannels, id)
 	}
 }
