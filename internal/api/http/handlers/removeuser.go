@@ -8,8 +8,6 @@ import (
 )
 
 func (u *UserHandler) RemoveUserHandler(w http.ResponseWriter, req *http.Request) {
-	log.Print("CARINTRA")
-
 	vars := mux.Vars(req)
 	id, ok := vars["id"]
 	if !ok || id == "" {
@@ -24,8 +22,4 @@ func (u *UserHandler) RemoveUserHandler(w http.ResponseWriter, req *http.Request
 		http.Error(w, "Failed to delete user", http.StatusInternalServerError)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"message":"User deleted successfully"}`))
-
 }

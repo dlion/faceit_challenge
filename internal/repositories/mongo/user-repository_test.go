@@ -68,8 +68,6 @@ func TestRepository(t *testing.T) {
 			assert.NotEmpty(t, userResult.CreatedAt)
 			assert.NotEmpty(t, userResult.UpdatedAt)
 			assert.NoError(t, bcrypt.CompareHashAndPassword([]byte(userResult.Password), []byte("testPassword")))
-
-			mongoClient.Database(DATABASE_NAME).Drop(ctx)
 		})
 
 		t.Run("Return an error if the user already exist", func(t *testing.T) {
@@ -116,7 +114,6 @@ func TestRepository(t *testing.T) {
 				Password:  "testPassword",
 			})
 			assert.Error(t, err)
-			mongoClient.Database(DATABASE_NAME).Drop(ctx)
 		})
 	})
 
@@ -185,7 +182,6 @@ func TestRepository(t *testing.T) {
 			assert.Equal(t, "testEmail@email.com", userResult.Email)
 			assert.NotEqual(t, userResult.CreatedAt, userResult.UpdatedAt)
 			assert.Greater(t, userResult.UpdatedAt, userResult.CreatedAt)
-			mongoClient.Database(DATABASE_NAME).Drop(ctx)
 		})
 
 		t.Run("Return an error if the user doesn't exist", func(t *testing.T) {
@@ -219,7 +215,6 @@ func TestRepository(t *testing.T) {
 				Password:  "testPassword",
 			})
 			assert.Error(t, err)
-			mongoClient.Database(DATABASE_NAME).Drop(ctx)
 		})
 	})
 
@@ -274,8 +269,6 @@ func TestRepository(t *testing.T) {
 			userResult := &repositories.User{}
 			err = result.Decode(userResult)
 			assert.Error(t, err)
-
-			mongoClient.Database(DATABASE_NAME).Drop(ctx)
 		})
 
 		t.Run("Return an error if the user doesn't exist", func(t *testing.T) {
@@ -387,7 +380,6 @@ func TestRepository(t *testing.T) {
 
 			assert.Equal(t, objectRandom1, users[0].Id)
 			assert.Equal(t, objectRandom, users[1].Id)
-			mongoClient.Database(DATABASE_NAME).Drop(ctx)
 		})
 
 		t.Run("Just a paginated list of users filtered by country and with an offset", func(t *testing.T) {
@@ -509,7 +501,6 @@ func TestRepository(t *testing.T) {
 			assert.Len(t, users, 2)
 			assert.Equal(t, objectRandom3, users[0].Id)
 			assert.Equal(t, objectRandom1, users[1].Id)
-			mongoClient.Database(DATABASE_NAME).Drop(ctx)
 		})
 	})
 }

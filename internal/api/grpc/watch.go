@@ -17,7 +17,6 @@ func (s *UserGrpcHandler) Watch(_ *emptypb.Empty, server proto.UserService_Watch
 
 	for {
 		select {
-		// Check if the client has disconnected or the context has been canceled
 		case <-server.Context().Done():
 			err := server.Context().Err()
 
@@ -37,7 +36,6 @@ func (s *UserGrpcHandler) Watch(_ *emptypb.Empty, server proto.UserService_Watch
 				ChangeType: change.OperationType,
 				UserId:     change.UserId,
 			}
-
 			err := server.Send(response)
 			if err != nil {
 				return err

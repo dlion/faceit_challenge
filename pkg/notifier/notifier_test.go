@@ -39,15 +39,12 @@ func TestNotifier(t *testing.T) {
 	t.Run("BroadcastNonBlocking", func(t *testing.T) {
 		ch := notifier.AddSubscriber("user2")
 
-		// Fill the channel to its capacity
 		for i := 0; i < 10; i++ {
 			notifier.Broadcast(ChangeData{OperationType: ChangeOperationInsert, UserId: "user2"})
 		}
 
-		// This message should be dropped as the channel is full
 		notifier.Broadcast(ChangeData{OperationType: ChangeOperationInsert, UserId: "overflow"})
 
-		// Ensure the channel has exactly 10 messages
 		count := 0
 		for {
 			select {
