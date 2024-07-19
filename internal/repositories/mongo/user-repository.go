@@ -23,7 +23,7 @@ const (
 var (
 	ErrUserAlreadyExist = errors.New("the user already exist in the db")
 	ErrUserNotFound     = errors.New("the user doesn't exist in the db")
-	ErrNothingToUpdate  = errors.New("there's anything to update")
+	ErrNothingToUpdate  = errors.New("there's anything to be update")
 )
 
 type UserRepositoryMongoImpl struct {
