@@ -44,7 +44,7 @@ Most of these considerations/choices have been taken due to the lack of time and
 * **ID Format:** The schema specifies UUIDs, but MongoDB's hex format for ObjectIDs is used instead. This choice improves insert performance and simplifies update/delete operations.
 * **Password Security:** Passwords are hashed with bcrypt. Future improvements could include salting with an internal constant and extracting hashing into a separate module for enhanced security.
 * **Pagination and Streaming:** The current implementation uses pagination. Streaming might be considered for handling larger datasets or higher limits in the future.
-***Testing:** The gRPC implementation lacks comprehensive testing due to time constraints. More extensive testing should be added.
+* **Testing:** The gRPC implementation lacks comprehensive testing due to time constraints. More extensive testing should be added.
 * **Project Structure:** Domain-Driven Design (DDD) principles were applied for better separation of concerns. Additional field validations could be beneficial.
 * Have in place more field validations.
 * **Port Configuration:** The HTTP server runs on port `80`, while the gRPC server is on port `8080`. Only the HTTP server is public exposed. Typically, gRPC servers are used for internal communication and require different security considerations.
