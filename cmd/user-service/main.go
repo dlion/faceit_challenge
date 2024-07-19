@@ -29,15 +29,11 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	mongodbURI := os.Getenv(MONGODB_ENV_VAR)
-	if mongodbURI == "" {
-		log.Fatalf("%s environment variable is not set", MONGODB_ENV_VAR)
-	}
-
+	mongodbURI := getMongoDBURIfromEnvVariable()
 	mongoClient := createMongoClient(ctx, mongodbURI)
 	userRepo := repositories.NewUserRepositoryMongoImpl(mongoClient)
 	userChangeNotifier := notifier.NewNotifier()
-	userService := user.NewUserService(userRepo, &userChangeNotifier)
+	userService := user.NewUserService(userRepo, userChangeNotifier)
 
 	grpcServer := createGrpcServer(userService)
 	grpcServer.Start(":8080")
@@ -57,6 +53,14 @@ func main() {
 	shutdownServers(ctx, grpcServer, httpServer)
 
 	log.Println("Server gracefully stopped")
+}
+
+func getMongoDBURIfromEnvVariable() string {
+	mongodbURI := os.Getenv(MONGODB_ENV_VAR)
+	if mongodbURI == "" {
+		log.Fatalf("%s environment variable is not set", MONGODB_ENV_VAR)
+	}
+	return mongodbURI
 }
 
 func shutdownServers(ctx context.Context, grpcServer *grpc.Server, httpServer *http.Server) {

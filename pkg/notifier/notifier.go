@@ -28,8 +28,8 @@ type NotifierImpl struct {
 	mu               sync.Mutex
 }
 
-func NewNotifier() NotifierImpl {
-	return NotifierImpl{receiverChannels: map[string]chan ChangeData{}}
+func NewNotifier() *NotifierImpl {
+	return &NotifierImpl{receiverChannels: map[string]chan ChangeData{}}
 }
 
 func (n *NotifierImpl) AddSubscriber(id string) <-chan ChangeData {
