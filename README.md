@@ -41,19 +41,21 @@ A user must be stored using the following schema:
 
 Most of these considerations/choices have been taken due to the lack of time and the nature of this exercise. Focusing on make things right and writing tests requires in general more time but it gives more confidence and helps writing more robust softwares, I hope it is going to take into consideration during the final evaluation.
 
-* The id in the provided schema is clearly an uuid but since I decided to use MongoDB as a db, I'm using the hex format of the MongoDB's `ObjectIDs`. Because has been shown that using UUIDs cause performance drop for inserts in MongoDB and in my opinion it's easier for an user providing it during the update/delete operation.
-* The password is hashed using the bcrypt function and saving it into the db. As future improvement it could be salted as well with some internal constant. For this exercise I let the `user-repository` taking care of it, but as a future improvement it could be extracted into a separate module, injecting it properly.
-* Since we are paginating I'm thinking that streaming back to the user the content doesn't have much sense in this scenario, for larger dataset or bigger limits, it can have sense implement it.
-* In the gRPC there is an evident lack of testing, due of the lack of time available to complete this exercise.
-* I tried to use DDD to have a better separation in the project structure.
+* **ID Format:** The schema specifies UUIDs, but MongoDB's hex format for ObjectIDs is used instead. This choice improves insert performance and simplifies update/delete operations.
+* **Password Security:** Passwords are hashed with bcrypt. Future improvements could include salting with an internal constant and extracting hashing into a separate module for enhanced security.
+* **Pagination and Streaming:** The current implementation uses pagination. Streaming might be considered for handling larger datasets or higher limits in the future.
+***Testing:** The gRPC implementation lacks comprehensive testing due to time constraints. More extensive testing should be added.
+* **Project Structure:** Domain-Driven Design (DDD) principles were applied for better separation of concerns. Additional field validations could be beneficial.
 * Have in place more field validations.
-* I exposed the http server, it is okay to be public available, I didn't expose the gRPC server, normally gRPC are made for internal communications and it should be treated differently.
-* I didn't add a "getUser" endpoint, it wasn't specified in the requirements, so I could focus on more important functionalities.
+* **Port Configuration:** The HTTP server runs on port `80`, while the gRPC server is on port `8080`. Only the HTTP server is public exposed. Typically, gRPC servers are used for internal communication and require different security considerations.
+* **Missing Endpoints:** The "getUser" endpoint is omitted as it was not specified in the requirements, allowing focus on other critical functionalities.
+* **Configuration and Logging:** The application uses default configuration and logging mechanisms. Future work could improve configuration management and use advanced logging libraries like [zap](https://github.com/uber-go/zap).
+* **Web Server** [Gorilla/Mux](https://github.com/gorilla/mux) has been used for the web server, it is simple to use and effective for what needed.
 
 ## Testing Strategy
 
 Testing is one of the most important part when writing software.   
-Personally I like the Test Driven Development approach.
+Personally I like the [Test Driven Development](https://en.wikipedia.org/wiki/Test-driven_development) approach following the Boston approach (inside-out).
 
 * In the data layer I wrote integration tests, using [Testcontainers](https://testcontainers.com/), specifically the MongoDB module. It helps to stay as close as possible to real scenarios.
 
@@ -370,7 +372,7 @@ Response:
 ]
 ```
 
-## gRPC functions:
+## gRPC Functions
 
 * `GetUsers(GetUsersRequest) returns (GetUsersResponse);`
 * `CreateUser(CreateUserRequest) returns (User);`
