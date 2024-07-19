@@ -12,7 +12,7 @@ import (
 )
 
 func (s *UserGrpcHandler) UpdateUser(ctx context.Context, request *proto.UpdateUserRequest) (*proto.User, error) {
-	serviceReq := user.UpdateUser{
+	serviceReq := &user.UpdateUser{
 		FirstName: request.GetFirstName(),
 		LastName:  request.GetLastName(),
 		Nickname:  request.GetNickname(),

@@ -26,7 +26,7 @@ func (u *UserHandler) UpdateUserHandler(w http.ResponseWriter, req *http.Request
 	}
 	updateUser.Id = id
 
-	updatedUser, err := u.UserService.UpdateUser(req.Context(), updateUser)
+	updatedUser, err := u.UserService.UpdateUser(req.Context(), &updateUser)
 	if err != nil {
 		log.Print(err)
 		http.Error(w, "Failed to update user", http.StatusInternalServerError)

@@ -33,7 +33,7 @@ func TestUserService(t *testing.T) {
 		mockedNotifier.On("Broadcast")
 
 		userService := NewUserService(mockedRepository, mockedNotifier)
-		addedUser, err := userService.NewUser(context.TODO(), NewUser{
+		addedUser, err := userService.NewUser(context.TODO(), &NewUser{
 			FirstName: "TestFirstName",
 			LastName:  "TestLastName",
 			Country:   "UK",
@@ -71,7 +71,7 @@ func TestUserService(t *testing.T) {
 		mockedNotifier.On("Broadcast")
 
 		userService := NewUserService(mockedRepository, mockedNotifier)
-		updatedUser, err := userService.UpdateUser(context.TODO(), UpdateUser{
+		updatedUser, err := userService.UpdateUser(context.TODO(), &UpdateUser{
 			Id:        objectId.Hex(),
 			FirstName: "TestFirstName",
 			LastName:  "TestLastName",

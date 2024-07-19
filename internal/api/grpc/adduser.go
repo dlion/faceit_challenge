@@ -23,7 +23,7 @@ func NewUserGrpcHandler(userService user.UserService) *UserGrpcHandler {
 }
 
 func (s *UserGrpcHandler) CreateUser(ctx context.Context, request *proto.CreateUserRequest) (*proto.User, error) {
-	serviceReq := user.NewUser{
+	serviceReq := &user.NewUser{
 		FirstName: request.GetFirstName(),
 		LastName:  request.GetLastName(),
 		Nickname:  request.GetNickname(),

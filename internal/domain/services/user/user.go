@@ -13,8 +13,8 @@ import (
 )
 
 type UserService interface {
-	NewUser(context.Context, NewUser) (*User, error)
-	UpdateUser(context.Context, UpdateUser) (*User, error)
+	NewUser(context.Context, *NewUser) (*User, error)
+	UpdateUser(context.Context, *UpdateUser) (*User, error)
 	RemoveUser(context.Context, string) error
 	GetUsers(context.Context, *filter.UserFilter) ([]*User, error)
 	GetChangeChannel(clientId string) <-chan notifier.ChangeData
@@ -30,8 +30,8 @@ func NewUserService(repository repositories.UserRepository, notifier notifier.No
 	return &UserServiceImpl{repository: repository, notifier: notifier}
 }
 
-func (u *UserServiceImpl) NewUser(ctx context.Context, newUser NewUser) (*User, error) {
-	log.Printf("Adding a new user: %+v", newUser)
+func (u *UserServiceImpl) NewUser(ctx context.Context, newUser *NewUser) (*User, error) {
+	log.Printf("Adding a new user: %s", newUser)
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	err := validate.Struct(newUser)
@@ -55,7 +55,7 @@ func (u *UserServiceImpl) NewUser(ctx context.Context, newUser NewUser) (*User, 
 	return outputUser, nil
 }
 
-func (u *UserServiceImpl) UpdateUser(ctx context.Context, updateUser UpdateUser) (*User, error) {
+func (u *UserServiceImpl) UpdateUser(ctx context.Context, updateUser *UpdateUser) (*User, error) {
 	log.Printf("Updating user %s", updateUser.Id)
 
 	hex, err := primitive.ObjectIDFromHex(updateUser.Id)

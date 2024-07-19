@@ -13,12 +13,12 @@ type MockUserService struct {
 	mock.Mock
 }
 
-func (m *MockUserService) NewUser(ctx context.Context, newUser user.NewUser) (*user.User, error) {
+func (m *MockUserService) NewUser(ctx context.Context, newUser *user.NewUser) (*user.User, error) {
 	args := m.Called()
 	return args.Get(0).(*user.User), nil
 }
 
-func (m *MockUserService) UpdateUser(ctx context.Context, updateUser user.UpdateUser) (*user.User, error) {
+func (m *MockUserService) UpdateUser(ctx context.Context, updateUser *user.UpdateUser) (*user.User, error) {
 	args := m.Called()
 	return args.Get(0).(*user.User), nil
 }
