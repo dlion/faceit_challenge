@@ -68,49 +68,49 @@ func int64Value(i *int64) string {
 	return fmt.Sprintf("%d", *i)
 }
 
-type FilterBuilder struct {
+type filterBuilder struct {
 	filter *UserFilter
 }
 
-func NewFilterBuilder() *FilterBuilder {
-	return &FilterBuilder{filter: &UserFilter{}}
+func NewFilterBuilder() *filterBuilder {
+	return &filterBuilder{filter: &UserFilter{}}
 }
 
-func (f *FilterBuilder) ByFirstName(firstName *string) *FilterBuilder {
+func (f *filterBuilder) ByFirstName(firstName *string) *filterBuilder {
 	f.filter.FirstName = firstName
 	return f
 }
 
-func (f *FilterBuilder) ByLastName(lastName *string) *FilterBuilder {
+func (f *filterBuilder) ByLastName(lastName *string) *filterBuilder {
 	f.filter.LastName = lastName
 	return f
 }
 
-func (f *FilterBuilder) ByNickname(nickname *string) *FilterBuilder {
+func (f *filterBuilder) ByNickname(nickname *string) *filterBuilder {
 	f.filter.Nickname = nickname
 	return f
 }
 
-func (f *FilterBuilder) ByCountry(country *string) *FilterBuilder {
+func (f *filterBuilder) ByCountry(country *string) *filterBuilder {
 	f.filter.Country = country
 	return f
 }
 
-func (f *FilterBuilder) ByEmail(email *string) *FilterBuilder {
+func (f *filterBuilder) ByEmail(email *string) *filterBuilder {
 	f.filter.Email = email
 	return f
 }
 
-func (f *FilterBuilder) WithLimit(limit *int64) *FilterBuilder {
+func (f *filterBuilder) WithLimit(limit *int64) *filterBuilder {
 	f.filter.Limit = limit
 	return f
 }
 
-func (f *FilterBuilder) WithOffset(offset *int64) *FilterBuilder {
+func (f *filterBuilder) WithOffset(offset *int64) *filterBuilder {
 	f.filter.Offset = offset
 	return f
 }
 
-func (f *FilterBuilder) Build() *UserFilter {
+func (f *filterBuilder) Build() *UserFilter {
 	return f.filter
 }

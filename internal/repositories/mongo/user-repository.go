@@ -54,7 +54,7 @@ func (u *UserRepositoryMongoImpl) AddUser(ctx context.Context, user *repositorie
 
 	insertedObjectID, ok := insertedUserID.InsertedID.(primitive.ObjectID)
 	if !ok {
-		log.Fatalf("Failed to convert the insertedID to an ObjectID")
+		return nil, errors.New("failed to convert the insertedID to an ObjectID")
 	}
 
 	user.Id = insertedObjectID

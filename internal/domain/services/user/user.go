@@ -58,12 +58,12 @@ func (u *UserServiceImpl) NewUser(ctx context.Context, newUser NewUser) (*User, 
 func (u *UserServiceImpl) UpdateUser(ctx context.Context, updateUser UpdateUser) (*User, error) {
 	log.Printf("Updating user %s", updateUser.Id)
 
-	repoUser := repositories.NewRepoUser(updateUser.FirstName, updateUser.LastName, updateUser.Nickname, updateUser.Password, updateUser.Email, updateUser.Country)
-
 	hex, err := primitive.ObjectIDFromHex(updateUser.Id)
 	if err != nil {
 		return nil, err
 	}
+
+	repoUser := repositories.NewRepoUser(updateUser.FirstName, updateUser.LastName, updateUser.Nickname, updateUser.Password, updateUser.Email, updateUser.Country)
 	repoUser.Id = hex
 
 	updatedUser, err := u.repository.UpdateUser(ctx, repoUser)
